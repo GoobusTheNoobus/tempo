@@ -1,7 +1,7 @@
 #pragma once
 #include "position.hpp"
 
-namespace Crystall::Attacks {
+namespace Tempo::Attacks {
     
     bool is_attacked(const Position& pos, Square square, Color by);
 

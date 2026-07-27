@@ -2,7 +2,7 @@
 
 #include "types.hpp"
 
-namespace Crystall {
+namespace Tempo {
 
     inline int ctz(u64 bb) { return __builtin_ctzll(bb); }
     inline int cnt(u64 bb) { return __builtin_popcountll(bb); }

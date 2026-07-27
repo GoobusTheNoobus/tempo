@@ -3,7 +3,7 @@
 #include "search.hpp"
 #include <cstring>
 
-namespace Crystall::Search {
+namespace Tempo::Search {
 
     class Killer {
 

@@ -1,7 +1,7 @@
 #include "tt.hpp"
 #include <cstring>
 
-namespace Crystall::TranspositionTable {
+namespace Tempo::TranspositionTable {
 
     static inline int get_index(u64 key) { return key % BucketCount; }
 

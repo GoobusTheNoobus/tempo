@@ -4,8 +4,8 @@
 
 #include <iostream>
 
-namespace Crystall::MoveGen {
-    
+namespace Tempo::MoveGen {
+
     namespace {
         void add(int& i, u16* arr, u16 m) {
             arr[i++] = m;
@@ -133,19 +133,21 @@ namespace Crystall::MoveGen {
         constexpr u64 BQCastleEmpty = Bitboards::SquareBB[D8] | Bitboards::SquareBB[C8] | Bitboards::SquareBB[B8];
 
         if (is_white && !pos.is_attacked(E1, them)) {
-            if (pos.has_castling_right(CastlingWK) && !(occ & WKCastleEmpty) && !pos.is_attacked(F1, them) && !pos.is_attacked(G1, them)) {
+
+            if (pos.has_castling_right(CastlingWK) && !(occ & WKCastleEmpty) && !pos.is_attacked(F1, them) && !pos.is_attacked(G1, them)) 
                 add(size, moves, Move::create(E1, G1, Move::Castling));
-            }
-            if (pos.has_castling_right(CastlingWQ) && !(occ & WQCastleEmpty) && !pos.is_attacked(D1, them) && !pos.is_attacked(C1, them)) {
+            
+            if (pos.has_castling_right(CastlingWQ) && !(occ & WQCastleEmpty) && !pos.is_attacked(D1, them) && !pos.is_attacked(C1, them)) 
                 add(size, moves, Move::create(E1, C1, Move::Castling));
-            }
+            
         } else if (!is_white && !pos.is_attacked(E8, them)) {
-            if (pos.has_castling_right(CastlingBK) && !(occ & BKCastleEmpty) && !pos.is_attacked(F8, them) && !pos.is_attacked(G8, them)) {
+
+            if (pos.has_castling_right(CastlingBK) && !(occ & BKCastleEmpty) && !pos.is_attacked(F8, them) && !pos.is_attacked(G8, them)) 
                 add(size, moves, Move::create(E8, G8, Move::Castling));
-            }
-            if (pos.has_castling_right(CastlingBQ) && !(occ & BQCastleEmpty) && !pos.is_attacked(D8, them) && !pos.is_attacked(C8, them)) {
+            
+            if (pos.has_castling_right(CastlingBQ) && !(occ & BQCastleEmpty) && !pos.is_attacked(D8, them) && !pos.is_attacked(C8, them)) 
                 add(size, moves, Move::create(E8, C8, Move::Castling));
-            }
+            
         }
 
         return size;

@@ -6,7 +6,7 @@
 #include "uci.hpp"
 #include "search.hpp"
 
-using namespace Crystall;
+using namespace Tempo;
 
 void initialize() {
     Attacks::init();

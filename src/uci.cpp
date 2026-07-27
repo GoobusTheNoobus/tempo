@@ -7,7 +7,7 @@
 #include <thread>
 #include <sstream>
 
-namespace Crystall::UCI {
+namespace Tempo::UCI {
 
     namespace {
         std::string score_string(int score) {
@@ -57,7 +57,7 @@ namespace Crystall::UCI {
     }
 
     void handle_uci() {
-        std::cout << "id name Crystall \n" <<
+        std::cout << "id name Tempo \n" <<
                      "id author GoobusTheNoobus\n" <<
                      "uciok" <<
                      std::endl;    

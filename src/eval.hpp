@@ -2,7 +2,7 @@
 
 #include "bitboards.hpp"
 
-namespace Crystall::Evaluation {
+namespace Tempo::Evaluation {
 
     constexpr int TempoBonus = 16;
 

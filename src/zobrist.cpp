@@ -1,7 +1,7 @@
 #include "zobrist.hpp"
 #include <random>
 
-void Crystall::Zobrist::init() {
+void Tempo::Zobrist::init() {
     std::mt19937_64 rng(67);
 
     for (int i = 0; i < PieceNB; ++i) {

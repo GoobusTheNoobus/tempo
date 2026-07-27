@@ -1,7 +1,7 @@
 #pragma once
 #include "types.hpp"
 
-namespace Crystall::Move {
+namespace Tempo::Move {
 
     enum Type : u8 {
         Normal,

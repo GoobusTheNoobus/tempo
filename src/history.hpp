@@ -4,7 +4,7 @@
 #include <cstring>
 #include <algorithm>
 
-namespace Crystall::Search {
+namespace Tempo::Search {
 
     class History {
         

@@ -11,7 +11,7 @@
 #include <algorithm>
 #include <cstring>
 
-namespace Crystall::Search {
+namespace Tempo::Search {
 
     namespace {
 

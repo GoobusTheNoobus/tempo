@@ -1,7 +1,7 @@
 #pragma once
 #include "types.hpp"
 
-namespace Crystall::Zobrist {
+namespace Tempo::Zobrist {
 
     inline u64 PieceSquareKeys[PieceNB][SquareNB];
     inline u64 CastlingKeys[16];

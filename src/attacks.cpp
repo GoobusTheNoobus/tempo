@@ -3,7 +3,7 @@
 #include <immintrin.h>
 #include <cpuid.h>
 
-namespace Crystall {
+namespace Tempo {
 
     namespace {
 

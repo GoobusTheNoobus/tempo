@@ -4,7 +4,7 @@
 #include "position.hpp"
 #include "timer.hpp"
 
-namespace Crystall::Search {
+namespace Tempo::Search {
     constexpr int MaxSearchDepth = 32;
 
     struct SearchInfo {

@@ -7,7 +7,7 @@
 #include <sstream>
 #include <charconv>
 
-namespace Crystall {
+namespace Tempo {
     constexpr char PieceCharacters[] = "PNBRQKpnbrqk";
 
     std::ostream& operator<<(std::ostream& os, const Position& pos) {

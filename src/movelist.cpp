@@ -3,7 +3,7 @@
 #include "history.hpp"
 #include "tt.hpp"
 
-namespace Crystall {
+namespace Tempo {
 
     namespace {
 

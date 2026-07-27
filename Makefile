@@ -1,9 +1,7 @@
-# ======================== Crystall ========================
-
 CXX = g++
 CXXFLAGS = -std=c++20 -O3 -march=native -mbmi2 -g -Isrc
 
-TARGET = crystall.exe
+TARGET = tempo.exe
 
 SRCS := $(wildcard src/*.cpp) \
         $(wildcard src/*/*.cpp) \

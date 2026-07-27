@@ -4,7 +4,7 @@
 #include "position.hpp"
 #include "movegen.hpp"
 
-namespace Crystall {
+namespace Tempo {
 
     namespace TranspositionTable { struct Bucket; }
     

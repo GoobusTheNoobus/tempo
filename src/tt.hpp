@@ -4,7 +4,7 @@
 #include "move.hpp"
 #include <iostream>
 
-namespace Crystall {
+namespace Tempo {
 
     namespace TranspositionTable {
 

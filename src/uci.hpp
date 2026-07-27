@@ -7,7 +7,7 @@
 #include <iostream>
 #include <vector>
 
-namespace Crystall {
+namespace Tempo {
     namespace UCI {
 
         void info_depth(int depth, int seldepth, int score, u64 elapsed, u64 total_nodes, const std::vector<u16>& pv);
