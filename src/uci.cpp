@@ -2,6 +2,7 @@
 #include "position.hpp"
 #include "search.hpp"
 #include "history.hpp"
+#include "killer.hpp"
 
 #include <thread>
 #include <sstream>
@@ -149,6 +150,7 @@ namespace Crystall::UCI {
     void ucinewgame() {
         TranspositionTable::clear();
         Search::History::clear();
+        Search::Killer::clear();
     }
 
     void dispatch(const std::string& cmd, std::istringstream& iss) {

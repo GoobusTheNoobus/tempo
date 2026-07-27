@@ -15,7 +15,7 @@ namespace Crystall::Search {
 
     namespace {
 
-        int reduction_table[256][MaxSearchDepth];
+        int reduction_table[2][256][MaxSearchDepth];
 
         constexpr int AspirationWindow = 130;
         constexpr int MaxQSearchDepth = 15;
@@ -30,7 +30,8 @@ namespace Crystall::Search {
     void init() {
         for (int m = 1; m < 256; ++m) {
             for (int d = 1; d < MaxSearchDepth; ++d) {
-                reduction_table[m][d] = (int)(0.5 * std::log(m) * std::log(d) + 0.4);
+                reduction_table[false][m][d] = (int)(0.5 * std::log(m) * std::log(d) + 0.75);
+                reduction_table[true][m][d]  = (int)(0.25 * std::log(m) * std::log(d) + 0.5);
             }
         }
     }
@@ -39,6 +40,7 @@ namespace Crystall::Search {
 
     void start(Position pos, int max_depth, int movetime) {
 
+        // History::clear();
         TranspositionTable::clear();
         Killer::clear();
         Timer::start(movetime);
@@ -110,8 +112,6 @@ namespace Crystall::Search {
                 
 
             UCI::info_depth(depth, info.seldepth, score, Timer::elapsed(), info.nodes_searched, pv);
-
-            
         }
 
         std::cout << "bestmove " << Move::to_string(best_move) << std::endl;
@@ -136,7 +136,6 @@ namespace Crystall::Search {
         if (Timer::should_stop_search()) return Timeout;
 
         // TT probe
-
         u64 key = pos.get_key();
         auto& bucket = TranspositionTable::probe(key);
         const TranspositionTable::Entry* best_entry = nullptr;
@@ -163,7 +162,6 @@ namespace Crystall::Search {
             if (NT == NonPVNode && alpha >= beta) {
                 return best_entry->score;
             }
-            
         }
 
         bool in_check = pos.is_in_check();
@@ -211,7 +209,16 @@ namespace Crystall::Search {
             }
 
             int score;
-            if (NT == NonPVNode || move_count > 1) {
+            if (NT == NonPVNode && move_count >= 8 && depth >= 3 && !in_check) {
+                int reduction = reduction_table[noisy][move_count][depth];
+
+                score = -search<NonPVNode>(info, pos, depth - 1 - reduction, plies_from_root + 1, -alpha - 1, -alpha);
+
+                if (score > alpha) {
+                    score = -search<NonPVNode>(info, pos, depth - 1, plies_from_root + 1, -alpha - 1, -alpha);
+                }
+
+            } else if (NT == NonPVNode || move_count > 1) {
                 score = -search<NonPVNode>(info, pos, depth - 1, plies_from_root + 1, -alpha - 1, -alpha);
             }
 
