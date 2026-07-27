@@ -208,6 +208,12 @@ namespace Tempo::Search {
                 UCI::info_depth(depth, Timer::elapsed(), info.nodes_searched, move, move_count);
             }
 
+            // late move pruning
+            if (NT == NonPVNode && move_count >= 12 && depth <= 3 && !in_check && !noisy) {
+                pos.undo_move();
+                continue;
+            }
+
             int score;
             if (NT == NonPVNode && move_count >= 8 && depth >= 3 && !in_check) {
                 int reduction = reduction_table[noisy][move_count][depth];
