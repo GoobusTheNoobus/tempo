@@ -42,6 +42,31 @@ namespace Crystall {
             return history_score;
         }
 
+        int score_move(const Position& pos, const u16 move, const u16 special_move, const u16 killer0, const u16 killer1) {
+            if (move == special_move) return 1200000;
+            
+            Square from = Move::from(move);
+            Square dest = Move::dest(move);
+            Move::Type flag = Move::type(move);
+
+            if (pos.get_piece_on(dest) != NoPiece) {
+                int mvvlva_score = MVVLVATable[type_of(pos.get_piece_on(from))][type_of(pos.get_piece_on(dest))];
+                return mvvlva_score;
+            }
+
+            if (flag >= Move::PromoQ) {
+                int promo_score = PromotionScoreTable[flag - Move::PromoQ];
+                return promo_score;
+            }
+
+            if (move == killer0 || move == killer1) {
+                return 600000;
+            }
+
+            int history_score = Search::History::table[pos.get_side_to_move()][from][dest];
+            return history_score;
+        }
+
         int score_move(const Position& pos, const u16& move, const TranspositionTable::Bucket& bucket) {
             int max_score = 0;
             for (int i = 0; i < TranspositionTable::BucketSize; ++i) {

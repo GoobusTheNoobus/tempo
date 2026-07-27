@@ -7,6 +7,7 @@
 #include "tt.hpp"
 #include "timer.hpp"
 #include "history.hpp"
+#include "killer.hpp"
 
 #include <chrono>
 #include <atomic>
@@ -42,6 +43,7 @@ namespace Crystall::Search {
     void start(Position pos, int max_depth, int movetime) {
 
         TranspositionTable::clear();
+        Killer::clear();
         Timer::start(movetime);
 
         int previous_score = 0;
@@ -236,6 +238,7 @@ namespace Crystall::Search {
             if (alpha >= beta) {
                 if (!noisy) {
                     History::update(pos.get_side_to_move(), Move::from(move), Move::dest(move), std::min(300 * depth - 300, 2500));
+                    Killer::add(plies_from_root, move);
 
                     // Loop all previously searched moves to penalise
                     for (int j = 0; j < i; ++j) {
