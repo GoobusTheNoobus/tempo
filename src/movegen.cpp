@@ -1,6 +1,3 @@
-// Crystall is a hobby UCI chess engine written in C++
-// Developed by GoobusTheNoobus
-
 #include "movegen.hpp"
 #include "attacks.hpp"
 #include "bitboards.hpp"
@@ -8,6 +5,7 @@
 #include <iostream>
 
 namespace Crystall::MoveGen {
+    
     namespace {
         void add(int& i, u16* arr, u16 m) {
             arr[i++] = m;

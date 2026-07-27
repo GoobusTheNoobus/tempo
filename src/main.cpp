@@ -1,6 +1,3 @@
-// Crystall is a hobby UCI chess engine written in C++
-// Developed by GoobusTheNoobus
-
 #include <iostream>
 
 #include "eval.hpp"
@@ -12,8 +9,6 @@
 using namespace Crystall;
 
 void initialize() {
-
-    // Initialize everything
     Attacks::init();
     Evaluation::init();
     Zobrist::init();
@@ -22,7 +17,6 @@ void initialize() {
 
 int main(void) {
     initialize();
-    std::cout << "Crystall UCI Chess Engine v1.6.3\n";
 
     UCI::loop();
 

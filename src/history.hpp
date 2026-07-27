@@ -1,33 +1,26 @@
-// Crystall is a hobby UCI chess engine written in C++
-// Developed by GoobusTheNoobus
-
 #pragma once
 
 #include "types.hpp"
 #include <cstring>
 #include <algorithm>
 
-namespace Crystall::Search::History {
+namespace Crystall::Search {
 
-    inline int table[ColorNB][SquareNB][SquareNB];
+    class History {
+        
+        public:
 
-    inline void clear() {
-        std::memset(table, 0, sizeof(table));
-    }
+        static inline int table[ColorNB][SquareNB][SquareNB];
 
-    inline void normalize() {
-        for (int c = 0; c < ColorNB; ++c) {
-            for (int from = 0; from < SquareNB; ++from) {
-                for (int dest = 0; dest < SquareNB; ++dest) {
-                    table[c][from][dest] /= 2;
-                }
-            }
+        static inline void clear() {
+            std::memset(table, 0, sizeof(table));
         }
-    }
 
-    inline void update(Color c, Square f, Square d, int bonus) {
-        int clamped = std::clamp(bonus, -500000, 500000);
-        table[c][f][d] += clamped - table[c][f][d] * abs(clamped) / 500000;
-    }
+        static inline void update(Color c, Square f, Square d, int bonus) {
+            int clamped = std::clamp(bonus, -500000, 500000);
+            table[c][f][d] += clamped - table[c][f][d] * abs(clamped) / 500000;
+        }
+
+    };
     
 }

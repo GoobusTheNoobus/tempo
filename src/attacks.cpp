@@ -1,6 +1,3 @@
-// Crystall is a hobby UCI chess engine written in C++
-// Developed by GoobusTheNoobus
-
 #include "attacks.hpp"
 #include "bitboards.hpp"
 #include <immintrin.h>
@@ -11,11 +8,10 @@ namespace Crystall {
     namespace {
 
         // Detect at compile time whether BMI2 is supported
-        constexpr bool UseBMI2 = 
         #ifdef __BMI2__
-            true
+            constexpr bool UseBMI2 = true
         #else
-            false
+            constexpr bool UseBMI2 = false
         #endif
         ;
 

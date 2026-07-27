@@ -1,8 +1,4 @@
-// Crystall is a hobby UCI chess engine written in C++
-// Developed by GoobusTheNoobus
-
 #include "tt.hpp"
-
 #include <cstring>
 
 namespace Crystall::TranspositionTable {
