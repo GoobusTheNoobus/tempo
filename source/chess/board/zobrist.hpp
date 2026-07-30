@@ -1,5 +1,5 @@
 #pragma once
-#include "types.hpp"
+#include "chess/types.hpp"
 
 namespace Tempo::Zobrist {
 

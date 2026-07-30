@@ -1,6 +1,6 @@
 #pragma once
-#include "types.hpp"
-#include "search.hpp"
+#include "chess/types.hpp"
+#include "search/search.hpp"
 #include <cstring>
 
 namespace Tempo::Search {

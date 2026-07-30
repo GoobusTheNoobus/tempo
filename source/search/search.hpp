@@ -1,8 +1,8 @@
 #pragma once
 
-#include "types.hpp"
-#include "position.hpp"
-#include "timer.hpp"
+#include "chess/types.hpp"
+#include "chess/board/position.hpp"
+#include "search/timer.hpp"
 
 namespace Tempo::Search {
     constexpr int MaxSearchDepth = 32;
@@ -10,6 +10,10 @@ namespace Tempo::Search {
     struct SearchInfo {
         u64 nodes_searched = 0;
         int seldepth = 0;
+
+        // pv table
+        u16 pv_table[MaxSearchDepth][MaxSearchDepth];
+        int pv_lengths[MaxSearchDepth];
     };
 
     struct RootSearchResult {
@@ -28,7 +32,7 @@ namespace Tempo::Search {
 
     template <NodeType NT>
     int search(SearchInfo& info, Position& pos, int depth, int plies_from_root, int alpha, int beta, bool allow_nmp = true);
-    int qsearch_node(SearchInfo& info, Position& pos, int depth, int plies_from_root, int alpha, int beta);
+    int qsearch(SearchInfo& info, Position& pos, int depth, int plies_from_root, int alpha, int beta);
 
     void init();
 }

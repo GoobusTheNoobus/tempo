@@ -1,10 +1,11 @@
-#include "search.hpp"
-#include "uci.hpp"
-#include "movelist.hpp"
-#include "tt.hpp"
-#include "timer.hpp"
-#include "history.hpp"
-#include "killer.hpp"
+#include "search/search.hpp"
+#include "uci/uci.hpp"
+#include "chess/move/movelist.hpp"
+#include "search/tt/tt.hpp"
+#include "search/timer.hpp"
+#include "search/history.hpp"
+#include "search/killer.hpp"
+#include "eval/score.hpp"
 
 #include <chrono>
 #include <atomic>
@@ -24,6 +25,16 @@ namespace Tempo::Search {
 
         inline bool is_noisy(const Position& pos, const u16 move) {
             return Move::type(move) >= Move::EnPassant || pos.get_piece_on(Move::dest(move)) != NoPiece;
+        }
+
+        inline void update_pv(SearchInfo& info, int ply, u16 move) {
+            info.pv_table[ply][ply] = move;
+            
+            int child_length = std::max(info.pv_lengths[ply + 1], ply + 1);
+            for (int i = ply + 1; i < child_length; ++i)
+                info.pv_table[ply][i] = info.pv_table[ply + 1][i];
+            
+            info.pv_lengths[ply] = child_length;
         }
     }
 
@@ -89,29 +100,9 @@ namespace Tempo::Search {
             if (Timer::should_stop_search()) break;
 
             previous_score = score;
+            best_move = info.pv_table[0][0];
 
-            std::vector<u16> pv;
-
-            // Read entry to get best move
-            u64 key = pos.get_key();
-            auto bucket = TranspositionTable::probe(key);
-            TranspositionTable::Entry* best_entry = nullptr;
-            int highest_depth = -1;
-
-            for (int i = 0; i < TranspositionTable::BucketSize; ++i) {
-                if (bucket.entries[i].depth > highest_depth && key == bucket.entries[i].key) {
-                    highest_depth = bucket.entries[i].depth;
-                    best_entry = &bucket.entries[i];
-                }
-            }
-
-            if (best_entry) {
-                pv.push_back(best_entry->best_move);
-                best_move = pv[0];
-            }
-                
-
-            UCI::info_depth(depth, info.seldepth, score, Timer::elapsed(), info.nodes_searched, pv);
+            UCI::info_depth(depth, info.seldepth, score, Timer::elapsed(), info.nodes_searched, info.pv_table[0], info.pv_lengths[0]);
         }
 
         std::cout << "bestmove " << Move::to_string(best_move) << std::endl;
@@ -128,10 +119,11 @@ namespace Tempo::Search {
             // Quiescence search
             // Determine the depth by how far we are from root.
             int qsearch_depth = plies_from_root * 2 + 2;
-            return qsearch_node(info, pos, std::min(qsearch_depth, MaxQSearchDepth), plies_from_root, alpha, beta);
+            return qsearch(info, pos, std::min(qsearch_depth, MaxQSearchDepth), plies_from_root, alpha, beta);
         }
 
         info.seldepth = std::max(info.seldepth, plies_from_root);
+        info.pv_lengths[plies_from_root] = plies_from_root;
 
         if (Timer::should_stop_search()) return Timeout;
 
@@ -236,8 +228,14 @@ namespace Tempo::Search {
 
             if (Timer::should_stop_search()) break;
 
-            if (score >= alpha) {
+            if (score > alpha) {
                 alpha = score;
+
+                if constexpr (NT != NonPVNode) {
+                    info.pv_table[plies_from_root][plies_from_root] = move;
+
+                    update_pv(info, plies_from_root, move);
+                }
             }
 
             if (score > best_score) {
@@ -282,7 +280,7 @@ namespace Tempo::Search {
         return best_score;
     }
 
-    int qsearch_node(SearchInfo& info, Position& pos, int depth, int plies_from_root, int alpha, int beta) {
+    int qsearch(SearchInfo& info, Position& pos, int depth, int plies_from_root, int alpha, int beta) {
         ++info.nodes_searched;
 
         if (pos.is_repetition() || pos.is_rule_50()) return DrawScore;
@@ -311,7 +309,7 @@ namespace Tempo::Search {
             bool is_legal = pos.attempt_move(move);
             if (!is_legal) continue;
 
-            int score = -qsearch_node(info, pos, depth - 1, plies_from_root + 1, -beta, -alpha);
+            int score = -qsearch(info, pos, depth - 1, plies_from_root + 1, -beta, -alpha);
             pos.undo_move();
 
             alpha = std::max(score, alpha);

@@ -1,10 +1,10 @@
 #include <iostream>
 
-#include "eval.hpp"
-#include "zobrist.hpp"
-#include "attacks.hpp"
-#include "uci.hpp"
-#include "search.hpp"
+#include "eval/eval.hpp"
+#include "chess/board/zobrist.hpp"
+#include "chess/board/attacks.hpp"
+#include "uci/uci.hpp"
+#include "search/search.hpp"
 
 using namespace Tempo;
 

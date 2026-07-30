@@ -5,3 +5,5 @@
 book.epd
 *.json
 *.bat
+build
+.vs

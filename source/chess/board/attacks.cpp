@@ -1,5 +1,5 @@
-#include "attacks.hpp"
-#include "bitboards.hpp"
+#include "chess/board/attacks.hpp"
+#include "chess/board/bitboards.hpp"
 #include <immintrin.h>
 #include <cpuid.h>
 
@@ -215,8 +215,8 @@ namespace Tempo {
         u64 RookAttacks[102400];
 
         struct Direction { int r, f; };
-        constexpr Direction BishopDirections[4] = {{1, 1}, {1, -1}, {-1, 1}, {-1, -1}};
-        constexpr Direction RookDirections[4]   = {{1, 0}, {-1, 0}, { 0, 1}, { 0, -1}};
+        constexpr Direction BishopDirections[4] = { {1, 1}, {1, -1}, {-1, 1}, {-1, -1} };
+        constexpr Direction RookDirections[4]   = { {1, 0}, {-1, 0}, { 0, 1}, { 0, -1} };
 
         bool out_of_bounds(int x, int y) { return unsigned(x) >= 8 || unsigned(y) >= 8; }
 

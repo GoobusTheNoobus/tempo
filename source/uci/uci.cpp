@@ -1,28 +1,16 @@
-#include "uci.hpp"
-#include "position.hpp"
-#include "search.hpp"
-#include "history.hpp"
-#include "killer.hpp"
+#include "uci/uci.hpp"
+#include "chess/board/position.hpp"
+#include "search/search.hpp"
+#include "search/history.hpp"
+#include "search/killer.hpp"
+#include "eval/score.hpp"
 
 #include <thread>
 #include <sstream>
 
 namespace Tempo::UCI {
 
-    namespace {
-        std::string score_string(int score) {
-            if (std::abs(score) <= MaxCentipawn) return "cp " + std::to_string(score);
-
-            int mate_dist = MateScore - std::abs(score);
-            
-            mate_dist = score > 0 ? mate_dist : -mate_dist;
-            mate_dist = (int)std::ceil(mate_dist / 2.0);
-
-            return "mate " + std::to_string(mate_dist);
-        }
-    }
-
-    void info_depth(int depth, int seldepth, int score, u64 elapsed, u64 total_nodes, const std::vector<u16>& pv) {
+    void info_depth(int depth, int seldepth, int score, u64 elapsed, u64 total_nodes, const u16 pv_arr[], int pv_len) {
         std::cout << "info depth " << depth <<
                         " seldepth " << seldepth <<
                         " score " << score_string(score) << 
@@ -32,8 +20,8 @@ namespace Tempo::UCI {
                         " time " << std::max<u64>(1ULL, elapsed) <<
                         " pv ";
         
-        for (const u16 m: pv) 
-            std::cout << Move::to_string(m) << ' ';
+        for (int i = 0; i < pv_len; ++i) 
+            std::cout << Move::to_string(pv_arr[i]) << ' ';
         
         std::cout << std::endl;
     }
@@ -41,7 +29,7 @@ namespace Tempo::UCI {
     void info_depth(int depth, u64 elapsed, u64 total_nodes, const u16 currmove, int currmovenumber) {
         std::cout << "info depth " << depth << " time " << elapsed << " nodes " << total_nodes << " nps " << total_nodes * 1000 / std::max<u64>(1ULL, elapsed) << " currmove " << Move::to_string(currmove) << " currmovenumber " << currmovenumber << std::endl;
     }
-    void info_string(const std::string& msg) { std::cout << "info string " << msg << std::endl; }
+    void info_string(const String& msg) { std::cout << "info string " << msg << std::endl; }
 
     namespace {
 
@@ -70,7 +58,7 @@ namespace Tempo::UCI {
             search_thread.join();
         }
 
-        std::string token;
+        String token;
 
         int depth = 0;
         int movetime = 0;
@@ -121,7 +109,7 @@ namespace Tempo::UCI {
     void handle_position(std::istringstream& iss) {
         stop();
 
-        std::string token;
+        String token;
         iss >> token;
 
         if (token == "startpos") {
@@ -129,7 +117,7 @@ namespace Tempo::UCI {
 
             iss >> token;
         } else if (token == "fen") {
-            std::string fen;
+            String fen;
 
             while ((iss >> token) && token != "moves") {
                 fen += token + " ";
@@ -153,7 +141,7 @@ namespace Tempo::UCI {
         Search::Killer::clear();
     }
 
-    void dispatch(const std::string& cmd, std::istringstream& iss) {
+    void dispatch(const String& cmd, std::istringstream& iss) {
         if (cmd == "uci") {
             handle_uci();
         }
@@ -183,15 +171,15 @@ namespace Tempo::UCI {
         position.set_up_startpos();
 
         while (true) {
-            std::string command;
+            String command;
             if (!std::getline(std::cin, command)) {
                 stop();
                 break;
             }
             std::istringstream iss(command);
-            std::string token;
+            String token;
 
-            if (command.find_first_not_of(" ") == std::string::npos) continue;
+            if (command.find_first_not_of(" ") == String::npos) continue;
 
             iss >> token;
             if (token == "quit") {

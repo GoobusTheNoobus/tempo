@@ -1,4 +1,4 @@
-#include "tt.hpp"
+#include "search/tt/tt.hpp"
 #include <cstring>
 
 namespace Tempo::TranspositionTable {

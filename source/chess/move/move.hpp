@@ -1,5 +1,5 @@
 #pragma once
-#include "types.hpp"
+#include "chess/types.hpp"
 
 namespace Tempo::Move {
 
@@ -25,8 +25,8 @@ namespace Tempo::Move {
 
     constexpr char PromoCharacters[] = {'q', 'r', 'b', 'n'};
 
-    inline std::string to_string(const u16 move) {
-        std::string move_str = square_to_string(from(move)) + square_to_string(dest(move));
+    inline String to_string(const u16 move) {
+        String move_str = square_to_string(from(move)) + square_to_string(dest(move));
 
         if (type(move) >= PromoQ) {
             return move_str + PromoCharacters[type(move) - PromoQ];

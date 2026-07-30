@@ -1,5 +1,5 @@
 #pragma once
-#include "position.hpp"
+#include "chess/board/position.hpp"
 
 namespace Tempo::Attacks {
     

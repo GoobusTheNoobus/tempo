@@ -1,14 +1,15 @@
-#include "position.hpp"
-#include "bitboards.hpp"
-#include "attacks.hpp"
-#include "zobrist.hpp"
-#include "movelist.hpp"
+#include "chess/board/position.hpp"
+#include "chess/board/bitboards.hpp"
+#include "chess/board/attacks.hpp"
+#include "chess/board/zobrist.hpp"
+#include "chess/move/movelist.hpp"
+#include "eval/score.hpp"
 
 #include <sstream>
 #include <charconv>
 
 namespace Tempo {
-    constexpr char PieceCharacters[] = "PNBRQKpnbrqk";
+    constexpr const char* PieceCharacters = "PNBRQKpnbrqk";
 
     std::ostream& operator<<(std::ostream& os, const Position& pos) {
         os << pos.to_string();
@@ -19,12 +20,12 @@ namespace Tempo {
         parse_fen(StartingPositionFen);
     }
 
-    void Position::parse_fen(const std::string& fen) {
+    void Position::parse_fen(const String& fen) {
         clear();
 
         std::istringstream iss(fen);
 
-        std::string fen_board_part;
+        String fen_board_part;
         if (!(iss >> fen_board_part)) return;
 
         int r = 7, f = 0;
@@ -53,11 +54,11 @@ namespace Tempo {
             ++f;
         }
 
-        std::string fen_side_part;
+        String fen_side_part;
         if (!(iss >> fen_side_part)) return;
         side_to_move = (fen_side_part == "w") ? White : Black;
 
-        std::string fen_castling_part;
+        String fen_castling_part;
         if (!(iss >> fen_castling_part)) return;
         state.castling_rights = 0;
 
@@ -72,7 +73,7 @@ namespace Tempo {
             }
         }
 
-        std::string fen_ep_part;
+        String fen_ep_part;
         if (!(iss >> fen_ep_part)) return;
 
         if (fen_ep_part == "-")
@@ -80,7 +81,7 @@ namespace Tempo {
         else
             state.en_passant_square = make_square(fen_ep_part);
 
-        std::string fen_rule50_part;
+        String fen_rule50_part;
         if (!(iss >> fen_rule50_part)) return;
         std::from_chars(
             fen_rule50_part.data(),
@@ -99,7 +100,7 @@ namespace Tempo {
 
     }
 
-    std::string Position::to_string() const {
+    String Position::to_string() const {
         std::ostringstream oss;
 
         oss << '\n';
@@ -320,7 +321,7 @@ namespace Tempo {
 
     }
 
-    void Position::make_move(const std::string& move_str) {
+    void Position::make_move(const String& move_str) {
         MoveList list(*this);
 
         for (int i = 0; i < list.size(); ++i) {

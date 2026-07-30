@@ -1,6 +1,6 @@
 #pragma once
 
-#include "types.hpp"
+#include "chess/types.hpp"
 #include <chrono>
 #include <atomic>
 

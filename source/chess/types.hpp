@@ -17,6 +17,9 @@ namespace Tempo {
 
     using usize = size_t;
 
+    using String = std::string;
+    using StringView = std::string_view;
+
     constexpr int FileNB = 8, RankNB = 8, SquareNB = FileNB * RankNB;
     enum Square : u8 {
         A1, B1, C1, D1, E1, F1, G1, H1,
@@ -49,7 +52,7 @@ namespace Tempo {
     inline int file_of(Square s) { return s % 8; }
     inline int rank_of(Square s) { return s / 8; }
 
-    inline Square make_square(const std::string& str) {
+    inline Square make_square(const String& str) {
 
         char rc = str[1];
         char fc = str[0];
@@ -62,20 +65,10 @@ namespace Tempo {
         return make_square(rank, file);
     }
 
-    inline std::string square_to_string(Square square) {
+    inline String square_to_string(Square square) {
         char rc = rank_of(square) + '1';
         char fc = file_of(square) + 'a';
 
         return {fc, rc};
     }
-
-    constexpr int CastlingWK = 1, CastlingWQ = 2, CastlingBK = 4, CastlingBQ = 8;
-    constexpr int DrawScore = 0, 
-                  MaxCentipawn = 10000, 
-                  MinCentipawn = -10000, 
-                  MateScore = 11000, 
-                  Infinity = 11001, 
-                  NegativeInfinity = -11001,
-                  Timeout = 11002,
-                  KnownWin = 6000;
 }

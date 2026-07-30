@@ -1,8 +1,8 @@
 #pragma once
 
-#include "types.hpp"
-#include "move.hpp"
-#include "eval.hpp"
+#include "chess/types.hpp"
+#include "chess/move/move.hpp"
+#include "eval/eval.hpp"
 
 #include <string>
 #include <iostream>
@@ -10,7 +10,8 @@
 
 namespace Tempo {
 
-    constexpr char StartingPositionFen[] = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+    constexpr const char* StartingPositionFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+    constexpr int CastlingWK = 1, CastlingWQ = 2, CastlingBK = 4, CastlingBQ = 8;
 
     struct GameState {
         Square en_passant_square = NoSquare;
@@ -29,27 +30,13 @@ namespace Tempo {
 
     class Position {
 
-        Piece board[SquareNB];
-        u64 piece_bitboards[PieceNB];
-        u64 color_bitboards[ColorNB];
-        u64 occupancy = 0;
-
-        Color side_to_move;
-        GameState state;
-        u64 hash = 0;
-
-        MoveUndoInfo move_undo_stack[1024];
-        int ply = 0;
-
-        Evaluation::TaperedScore psqt_scores;
-
-        public:
+    public:
 
         Position() = default;
         
-        void parse_fen(const std::string& fen);
+        void parse_fen(const String& fen);
         void set_up_startpos();
-        std::string to_string() const;
+        String to_string() const;
 
         inline Piece get_piece_on(Square s) const { return board[int(s)]; }
         inline u64 get_bitboard(Color c) const { return color_bitboards[int(c)]; }
@@ -68,7 +55,7 @@ namespace Tempo {
         bool is_in_check() const;
 
         void make_move(const u16 move);
-        void make_move(const std::string&);
+        void make_move(const String&);
         bool attempt_move(const u16 move);
         void undo_move();
 
@@ -77,7 +64,7 @@ namespace Tempo {
         int evaluate() const;
         bool is_repetition() const;
 
-        private:
+    private:
 
         void clear();
         void clear_square(Square square);
@@ -85,6 +72,20 @@ namespace Tempo {
 
         void push_move_stacks(u64 key, u16 move, int castling_rights, int rule50_clock, Square en_passant_square, Piece captured_piece);
         MoveUndoInfo& pop_undo_info();
+
+        Piece board[SquareNB];
+        u64 piece_bitboards[PieceNB];
+        u64 color_bitboards[ColorNB];
+        u64 occupancy = 0;
+
+        Color side_to_move;
+        GameState state;
+        u64 hash = 0;
+
+        MoveUndoInfo move_undo_stack[1024];
+        int ply = 0;
+
+        Evaluation::TaperedScore psqt_scores;
 
     };
 
