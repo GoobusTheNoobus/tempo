@@ -63,34 +63,6 @@ namespace Tempo {
             int history_score = Search::History::table[pos.get_side_to_move()][from][dest];
             return history_score;
         }
-
-        int score_move(const Position& pos, const u16& move, const TranspositionTable::Bucket& bucket) {
-            int max_score = 0;
-            for (int i = 0; i < TranspositionTable::BucketSize; ++i) {
-                if (bucket.entries[i].best_move == move) {
-                    max_score = 1100000 + bucket.entries[i].depth;
-                }
-            }
-
-            if (max_score) return max_score;
-            
-            Square from = Move::from(move);
-            Square dest = Move::dest(move);
-            Move::Type flag = Move::type(move);
-
-            if (pos.get_piece_on(dest) != NoPiece) {
-                int mvvlva_score = MVVLVATable[type_of(pos.get_piece_on(from))][type_of(pos.get_piece_on(dest))];
-                return mvvlva_score;
-            }
-
-            if (flag >= Move::PromoQ) {
-                int promo_score = PromotionScoreTable[flag - Move::PromoQ];
-                return promo_score;
-            }
-
-            int history_score = Search::History::table[pos.get_side_to_move()][from][dest];
-            return history_score;
-        }
     }
 
     void MoveList::calculate_scores(const u16 special_move) {
@@ -102,12 +74,6 @@ namespace Tempo {
     void MoveList::calculate_scores() {
         for (int i = 0; i < size_; ++i) {
             scores[i] = score_move(pos, moves[i], Move::NullMove);
-        }
-    }
-
-    void MoveList::calculate_scores(const TranspositionTable::Bucket& bucket) {
-        for (int i = 0; i < size_; ++i) {
-            scores[i] = score_move(pos, moves[i], bucket);
         }
     }
 }

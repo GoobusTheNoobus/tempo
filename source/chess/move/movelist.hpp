@@ -24,7 +24,6 @@ namespace Tempo {
         inline int size() { return size_; }
 
         void calculate_scores(const u16 special_move);
-        void calculate_scores(const TranspositionTable::Bucket& bucket);
         void calculate_scores();
         inline bool next(int i) {
             

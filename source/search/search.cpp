@@ -142,7 +142,11 @@ namespace Tempo::Search {
             }
         }
 
+        u16 tt_move = 0;
+
         if (best_entry && best_entry->depth >= depth) {
+
+            tt_move = best_entry->best_move;
 
             if (NT == NonPVNode && best_entry->flag == TranspositionTable::Exact) {
                 return best_entry->score;
@@ -182,7 +186,7 @@ namespace Tempo::Search {
         int original_alpha = alpha;
 
         MoveList moves(pos);
-        moves.calculate_scores(bucket);
+        moves.calculate_scores(tt_move);
 
         int i = 0;
         while (moves.next(i)) {
