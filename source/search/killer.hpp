@@ -15,9 +15,9 @@ namespace Tempo::Search {
             std::memset(table, 0, sizeof(table));
         }
 
-        static inline void add(int plies_from_root, u16 move) {
-            table[plies_from_root][1] = table[plies_from_root][0];
-            table[plies_from_root][0] = move;
+        static inline void add(int pliesFromRoot, u16 move) {
+            table[pliesFromRoot][1] = table[pliesFromRoot][0];
+            table[pliesFromRoot][0] = move;
         }
     };
     

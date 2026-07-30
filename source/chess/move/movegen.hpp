@@ -4,5 +4,5 @@
 #include "chess/board/position.hpp"
 
 namespace Tempo::MoveGen {
-    int generate_pseudo_legal_moves(const Position& pos, u16 moves[]);
+    int generatePseudoLegalMoves(const Position& pos, u16 moves[]);
 }

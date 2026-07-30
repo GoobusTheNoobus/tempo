@@ -16,60 +16,60 @@ namespace Tempo::Search {
 
     namespace {
 
-        int reduction_table[2][256][MaxSearchDepth];
+        int reductionTable[2][256][MaxSearchDepth];
 
         constexpr int AspirationWindow = 130;
         constexpr int MaxQSearchDepth = 15;
         constexpr int MinNMPDepth = 3;
         constexpr int NMPReduction = 2;
 
-        inline bool is_noisy(const Position& pos, const u16 move) {
-            return Move::type(move) >= Move::EnPassant || pos.get_piece_on(Move::dest(move)) != NoPiece;
+        inline bool isNoisy(const Position& pos, const u16 move) {
+            return Move::type(move) >= Move::EnPassant || pos.getPieceOn(Move::dest(move)) != NoPiece;
         }
 
-        inline void update_pv(SearchInfo& info, int ply, u16 move) {
-            info.pv_table[ply][ply] = move;
+        inline void updatePv(SearchInfo& info, int ply, u16 move) {
+            info.pvTable[ply][ply] = move;
             
-            int child_length = std::max(info.pv_lengths[ply + 1], ply + 1);
-            for (int i = ply + 1; i < child_length; ++i)
-                info.pv_table[ply][i] = info.pv_table[ply + 1][i];
+            int childLength = std::max(info.pvLengths[ply + 1], ply + 1);
+            for (int i = ply + 1; i < childLength; ++i)
+                info.pvTable[ply][i] = info.pvTable[ply + 1][i];
             
-            info.pv_lengths[ply] = child_length;
+            info.pvLengths[ply] = childLength;
         }
     }
 
     void init() {
         for (int m = 1; m < 256; ++m) {
             for (int d = 1; d < MaxSearchDepth; ++d) {
-                reduction_table[false][m][d] = (int)(0.5 * std::log(m) * std::log(d) + 0.75);
-                reduction_table[true][m][d]  = (int)(0.25 * std::log(m) * std::log(d) + 0.5);
+                reductionTable[false][m][d] = (int)(0.5 * std::log(m) * std::log(d) + 0.75);
+                reductionTable[true][m][d]  = (int)(0.25 * std::log(m) * std::log(d) + 0.5);
             }
         }
     }
 
     constexpr int AspirationExpansion = 2;
 
-    void start(Position pos, int max_depth, int movetime) {
+    void start(Position pos, int maxDepth, int movetime) {
 
         // History::clear();
         TranspositionTable::clear();
         Killer::clear();
         Timer::start(movetime);
 
-        int previous_score = 0;
-        u16 best_move = 0;
+        int previousScore = 0;
+        u16 bestMove = 0;
 
         SearchInfo info;
-        for (int depth = 1; depth <= max_depth; ++depth) {
+        for (int depth = 1; depth <= maxDepth; ++depth) {
 
-            bool log_currmove = Timer::elapsed() > 500;
+            bool logCurrmove = Timer::elapsed() > 500;
 
             info.seldepth = 0;
 
             int delta = AspirationWindow;
 
-            int alpha = previous_score - delta;
-            int beta = previous_score + delta;
+            int alpha = previousScore - delta;
+            int beta = previousScore + delta;
 
             int score;
             if (depth == 1) {
@@ -79,7 +79,7 @@ namespace Tempo::Search {
                 while (true) {
                     score = search<RootNode>(info, pos, depth, 0, alpha, beta, false);
 
-                    if (Timer::should_stop_search()) break;
+                    if (Timer::shouldStopSearch()) break;
 
                     if (score <= alpha) {
                         alpha -= delta;
@@ -97,166 +97,166 @@ namespace Tempo::Search {
                 }
             }
 
-            if (Timer::should_stop_search()) break;
+            if (Timer::shouldStopSearch()) break;
 
-            previous_score = score;
-            best_move = info.pv_table[0][0];
+            previousScore = score;
+            bestMove = info.pvTable[0][0];
 
-            UCI::info_depth(depth, info.seldepth, score, Timer::elapsed(), info.nodes_searched, info.pv_table[0], info.pv_lengths[0]);
+            UCI::infoDepth(depth, info.seldepth, score, Timer::elapsed(), info.nodesSearched, info.pvTable[0], info.pvLengths[0]);
         }
 
-        std::cout << "bestmove " << Move::to_string(best_move) << std::endl;
+        std::cout << "bestmove " << Move::toString(bestMove) << std::endl;
     }
 
     template <NodeType NT>
-    int search(SearchInfo& info, Position& pos, int depth, int plies_from_root, int alpha, int beta, bool allow_nmp) {
+    int search(SearchInfo& info, Position& pos, int depth, int pliesFromRoot, int alpha, int beta, bool allowNmp) {
         
-        ++info.nodes_searched;
+        ++info.nodesSearched;
 
-        if (pos.is_repetition() || pos.is_rule_50()) return DrawScore;
+        if (pos.isRepetition() || pos.isRule50()) return DrawScore;
         if (depth == 0 && NT != RootNode) {
 
             // Quiescence search
             // Determine the depth by how far we are from root.
-            int qsearch_depth = plies_from_root * 2 + 2;
-            return qsearch(info, pos, std::min(qsearch_depth, MaxQSearchDepth), plies_from_root, alpha, beta);
+            int qsearchDepth = pliesFromRoot * 2 + 2;
+            return qsearch(info, pos, std::min(qsearchDepth, MaxQSearchDepth), pliesFromRoot, alpha, beta);
         }
 
-        info.seldepth = std::max(info.seldepth, plies_from_root);
-        info.pv_lengths[plies_from_root] = plies_from_root;
+        info.seldepth = std::max(info.seldepth, pliesFromRoot);
+        info.pvLengths[pliesFromRoot] = pliesFromRoot;
 
-        if (Timer::should_stop_search()) return Timeout;
+        if (Timer::shouldStopSearch()) return Timeout;
 
         // TT probe
-        u64 key = pos.get_key();
+        u64 key = pos.getKey();
         auto& bucket = TranspositionTable::probe(key);
-        const TranspositionTable::Entry* best_entry = nullptr;
-        int highest_depth = -1;
+        const TranspositionTable::Entry* bestEntry = nullptr;
+        int highestDepth = -1;
 
         for (int i = 0; i < TranspositionTable::BucketSize; ++i) {
             const TranspositionTable::Entry* current = &bucket.entries[i];
 
-            if (current->key == key && highest_depth < current->depth) {
-                highest_depth = current->depth;
-                best_entry = current;
+            if (current->key == key && highestDepth < current->depth) {
+                highestDepth = current->depth;
+                bestEntry = current;
             }
         }
 
-        u16 tt_move = 0;
+        u16 ttMove = 0;
 
-        if (best_entry && best_entry->depth >= depth) {
+        if (bestEntry && bestEntry->depth >= depth) {
 
-            tt_move = best_entry->best_move;
+            ttMove = bestEntry->bestMove;
 
-            if (NT == NonPVNode && best_entry->flag == TranspositionTable::Exact) {
-                return best_entry->score;
+            if (NT == NonPVNode && bestEntry->flag == TranspositionTable::Exact) {
+                return bestEntry->score;
             }
 
-            else if (best_entry->flag == TranspositionTable::Lower) alpha = std::max(alpha, best_entry->score);
-            else if (best_entry->flag == TranspositionTable::Upper) beta = std::min(beta, best_entry->score);
+            else if (bestEntry->flag == TranspositionTable::Lower) alpha = std::max(alpha, bestEntry->score);
+            else if (bestEntry->flag == TranspositionTable::Upper) beta = std::min(beta, bestEntry->score);
 
             if (NT == NonPVNode && alpha >= beta) {
-                return best_entry->score;
+                return bestEntry->score;
             }
         }
 
-        bool in_check = pos.is_in_check();
-        int static_eval = pos.evaluate();
+        bool inCheck = pos.isInCheck();
+        int staticEval = pos.evaluate();
 
-        if (NT == NonPVNode && !in_check && depth <= 3 && static_eval - 80 * depth >= beta) {
-            return static_eval;
+        if (NT == NonPVNode && !inCheck && depth <= 3 && staticEval - 80 * depth >= beta) {
+            return staticEval;
         }
 
-        if (NT == NonPVNode && !in_check && allow_nmp && depth >= MinNMPDepth && static_eval >= beta && pos.has_non_pawn_material()) {
+        if (NT == NonPVNode && !inCheck && allowNmp && depth >= MinNMPDepth && staticEval >= beta && pos.hasNonPawnMaterial()) {
 
             int reduction = NMPReduction;
 
-            pos.make_move(Move::NullMove);
-            int null_score = -search<NonPVNode>(info, pos, depth - 1 - reduction, plies_from_root + 1, -beta, -beta + 1, false);
-            pos.undo_move();
+            pos.makeMove(Move::NullMove);
+            int nullScore = -search<NonPVNode>(info, pos, depth - 1 - reduction, pliesFromRoot + 1, -beta, -beta + 1, false);
+            pos.undoMove();
 
-            if (null_score >= beta) {
+            if (nullScore >= beta) {
                 return beta;
             }
         }
 
-        int best_score = NegativeInfinity;
-        u16 best_move = Move::NullMove;
-        int move_count = 0;
-        int original_alpha = alpha;
+        int bestScore = NegativeInfinity;
+        u16 bestMove = Move::NullMove;
+        int moveCount = 0;
+        int originalAlpha = alpha;
 
         MoveList moves(pos);
-        moves.calculate_scores(tt_move);
+        moves.calculateScores(ttMove);
 
         int i = 0;
         while (moves.next(i)) {
             u16 move = moves[i];
             ++i;
 
-            bool noisy = is_noisy(pos, move);
+            bool noisy = isNoisy(pos, move);
 
-            bool is_legal = pos.attempt_move(move);
-            if (!is_legal) continue;
+            bool isLegal = pos.attemptMove(move);
+            if (!isLegal) continue;
 
-            ++move_count;
+            ++moveCount;
 
             if (NT == RootNode && Timer::elapsed() >= 1500) {
-                UCI::info_depth(depth, Timer::elapsed(), info.nodes_searched, move, move_count);
+                UCI::infoDepth(depth, Timer::elapsed(), info.nodesSearched, move, moveCount);
             }
 
             // late move pruning
-            if (NT == NonPVNode && move_count >= 12 && depth <= 3 && !in_check && !noisy) {
-                pos.undo_move();
+            if (NT == NonPVNode && moveCount >= 12 && depth <= 3 && !inCheck && !noisy) {
+                pos.undoMove();
                 continue;
             }
 
             int score;
-            if (NT == NonPVNode && move_count >= 8 && depth >= 3 && !in_check) {
-                int reduction = reduction_table[noisy][move_count][depth];
+            if (NT == NonPVNode && moveCount >= 8 && depth >= 3 && !inCheck) {
+                int reduction = reductionTable[noisy][moveCount][depth];
 
-                score = -search<NonPVNode>(info, pos, depth - 1 - reduction, plies_from_root + 1, -alpha - 1, -alpha);
+                score = -search<NonPVNode>(info, pos, depth - 1 - reduction, pliesFromRoot + 1, -alpha - 1, -alpha);
 
                 if (score > alpha) {
-                    score = -search<NonPVNode>(info, pos, depth - 1, plies_from_root + 1, -alpha - 1, -alpha);
+                    score = -search<NonPVNode>(info, pos, depth - 1, pliesFromRoot + 1, -alpha - 1, -alpha);
                 }
 
-            } else if (NT == NonPVNode || move_count > 1) {
-                score = -search<NonPVNode>(info, pos, depth - 1, plies_from_root + 1, -alpha - 1, -alpha);
+            } else if (NT == NonPVNode || moveCount > 1) {
+                score = -search<NonPVNode>(info, pos, depth - 1, pliesFromRoot + 1, -alpha - 1, -alpha);
             }
 
-            if (NT != NonPVNode && (move_count == 1 || score > alpha)) {
-                score = -search<PVNode>(info, pos, depth - 1, plies_from_root + 1, -beta, -alpha);
+            if (NT != NonPVNode && (moveCount == 1 || score > alpha)) {
+                score = -search<PVNode>(info, pos, depth - 1, pliesFromRoot + 1, -beta, -alpha);
             }
 
-            pos.undo_move();
+            pos.undoMove();
 
-            if (Timer::should_stop_search()) break;
+            if (Timer::shouldStopSearch()) break;
 
             if (score > alpha) {
                 alpha = score;
 
                 if constexpr (NT != NonPVNode) {
-                    info.pv_table[plies_from_root][plies_from_root] = move;
+                    info.pvTable[pliesFromRoot][pliesFromRoot] = move;
 
-                    update_pv(info, plies_from_root, move);
+                    updatePv(info, pliesFromRoot, move);
                 }
             }
 
-            if (score > best_score) {
-                best_score = score;
-                best_move = move;
+            if (score > bestScore) {
+                bestScore = score;
+                bestMove = move;
             }
 
             if (alpha >= beta) {
                 if (!noisy) {
-                    History::update(pos.get_side_to_move(), Move::from(move), Move::dest(move), std::min(300 * depth - 300, 2500));
-                    Killer::add(plies_from_root, move);
+                    History::update(pos.getSideToMove(), Move::from(move), Move::dest(move), std::min(300 * depth - 300, 2500));
+                    Killer::add(pliesFromRoot, move);
 
                     // Loop all previously searched moves to penalise
                     for (int j = 0; j < i; ++j) {
                         u16 m = moves[j];
-                        if (!is_noisy(pos, m))
-                            History::update(pos.get_side_to_move(), Move::from(m), Move::dest(m), -std::min(300 * depth - 300, 2500));
+                        if (!isNoisy(pos, m))
+                            History::update(pos.getSideToMove(), Move::from(m), Move::dest(m), -std::min(300 * depth - 300, 2500));
                     }
                 }
 
@@ -264,57 +264,57 @@ namespace Tempo::Search {
             }
         }
 
-        if (move_count == 0) {
+        if (moveCount == 0) {
 
-            if (pos.is_in_check())
-                return -MateScore + plies_from_root + 1;
+            if (pos.isInCheck())
+                return -MateScore + pliesFromRoot + 1;
 
             return DrawScore;
         }
 
-        TranspositionTable::EntryType store_flag;
-        if (best_score <= original_alpha) store_flag = TranspositionTable::Upper;
-        else if (best_score >= beta) store_flag = TranspositionTable::Lower;
-        else store_flag = TranspositionTable::Exact;
+        TranspositionTable::EntryType storeFlag;
+        if (bestScore <= originalAlpha) storeFlag = TranspositionTable::Upper;
+        else if (bestScore >= beta) storeFlag = TranspositionTable::Lower;
+        else storeFlag = TranspositionTable::Exact;
 
-        if (best_move != 0) {
-            TranspositionTable::write(pos.get_key(), best_move, std::clamp(best_score, -KnownWin, KnownWin), depth, store_flag);
+        if (bestMove != 0) {
+            TranspositionTable::write(pos.getKey(), bestMove, std::clamp(bestScore, -KnownWin, KnownWin), depth, storeFlag);
         }
 
-        return best_score;
+        return bestScore;
     }
 
-    int qsearch(SearchInfo& info, Position& pos, int depth, int plies_from_root, int alpha, int beta) {
-        ++info.nodes_searched;
+    int qsearch(SearchInfo& info, Position& pos, int depth, int pliesFromRoot, int alpha, int beta) {
+        ++info.nodesSearched;
 
-        if (pos.is_repetition() || pos.is_rule_50()) return DrawScore;
-        if (Timer::should_stop_search()) return Timeout;
+        if (pos.isRepetition() || pos.isRule50()) return DrawScore;
+        if (Timer::shouldStopSearch()) return Timeout;
 
-        bool in_check = pos.is_in_check();
-        int static_eval = pos.evaluate();
+        bool inCheck = pos.isInCheck();
+        int staticEval = pos.evaluate();
 
-        if (depth <= 0 && !in_check) return static_eval;
+        if (depth <= 0 && !inCheck) return staticEval;
 
-        if (!in_check && static_eval >= beta) {
-            return static_eval;
+        if (!inCheck && staticEval >= beta) {
+            return staticEval;
         }
 
-        alpha = std::max(alpha, static_eval);
+        alpha = std::max(alpha, staticEval);
 
-        info.seldepth = std::max(info.seldepth, plies_from_root);
+        info.seldepth = std::max(info.seldepth, pliesFromRoot);
 
         MoveList moves(pos);
         for (int i = 0; i < moves.size(); ++i) {
             u16 move = moves[i];
 
-            bool search_move = in_check || is_noisy(pos, move);
-            if (!search_move) continue;
+            bool searchMove = inCheck || isNoisy(pos, move);
+            if (!searchMove) continue;
 
-            bool is_legal = pos.attempt_move(move);
-            if (!is_legal) continue;
+            bool isLegal = pos.attemptMove(move);
+            if (!isLegal) continue;
 
-            int score = -qsearch(info, pos, depth - 1, plies_from_root + 1, -beta, -alpha);
-            pos.undo_move();
+            int score = -qsearch(info, pos, depth - 1, pliesFromRoot + 1, -beta, -alpha);
+            pos.undoMove();
 
             alpha = std::max(score, alpha);
 

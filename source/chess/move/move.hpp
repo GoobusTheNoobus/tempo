@@ -25,14 +25,14 @@ namespace Tempo::Move {
 
     constexpr char PromoCharacters[] = {'q', 'r', 'b', 'n'};
 
-    inline String to_string(const u16 move) {
-        String move_str = square_to_string(from(move)) + square_to_string(dest(move));
+    inline String toString(const u16 move) {
+        String moveStr = squareToString(from(move)) + squareToString(dest(move));
 
         if (type(move) >= PromoQ) {
-            return move_str + PromoCharacters[type(move) - PromoQ];
+            return moveStr + PromoCharacters[type(move) - PromoQ];
         }
 
-        return move_str;
+        return moveStr;
     }
 
     constexpr u16 NullMove = 0;

@@ -18,62 +18,62 @@ namespace Tempo {
 
         constexpr int PromotionScoreTable[4] = { 790000, 750000, 732000, 731000 };
         
-        int score_move(const Position& pos, const u16& move, const u16& special_move) {
-            if (move == special_move) return 1200000;
+        int scoreMove(const Position& pos, const u16& move, const u16& specialMove) {
+            if (move == specialMove) return 1200000;
             
             Square from = Move::from(move);
             Square dest = Move::dest(move);
             Move::Type flag = Move::type(move);
 
-            if (pos.get_piece_on(dest) != NoPiece) {
-                int mvvlva_score = MVVLVATable[type_of(pos.get_piece_on(from))][type_of(pos.get_piece_on(dest))];
-                return mvvlva_score;
+            if (pos.getPieceOn(dest) != NoPiece) {
+                int mvvlvaScore = MVVLVATable[typeOf(pos.getPieceOn(from))][typeOf(pos.getPieceOn(dest))];
+                return mvvlvaScore;
             }
 
             if (flag >= Move::PromoQ) {
-                int promo_score = PromotionScoreTable[flag - Move::PromoQ];
-                return promo_score;
+                int promoScore = PromotionScoreTable[flag - Move::PromoQ];
+                return promoScore;
             }
 
-            int history_score = Search::History::table[pos.get_side_to_move()][from][dest];
-            return history_score;
+            int historyScore = Search::History::table[pos.getSideToMove()][from][dest];
+            return historyScore;
         }
 
-        int score_move(const Position& pos, const u16 move, const u16 special_move, const u16 killer0, const u16 killer1) {
-            if (move == special_move) return 1200000;
+        int scoreMove(const Position& pos, const u16 move, const u16 specialMove, const u16 killer0, const u16 killer1) {
+            if (move == specialMove) return 1200000;
             
             Square from = Move::from(move);
             Square dest = Move::dest(move);
             Move::Type flag = Move::type(move);
 
-            if (pos.get_piece_on(dest) != NoPiece) {
-                int mvvlva_score = MVVLVATable[type_of(pos.get_piece_on(from))][type_of(pos.get_piece_on(dest))];
-                return mvvlva_score;
+            if (pos.getPieceOn(dest) != NoPiece) {
+                int mvvlvaScore = MVVLVATable[typeOf(pos.getPieceOn(from))][typeOf(pos.getPieceOn(dest))];
+                return mvvlvaScore;
             }
 
             if (flag >= Move::PromoQ) {
-                int promo_score = PromotionScoreTable[flag - Move::PromoQ];
-                return promo_score;
+                int promoScore = PromotionScoreTable[flag - Move::PromoQ];
+                return promoScore;
             }
 
             if (move == killer0 || move == killer1) {
                 return 600000;
             }
 
-            int history_score = Search::History::table[pos.get_side_to_move()][from][dest];
-            return history_score;
+            int historyScore = Search::History::table[pos.getSideToMove()][from][dest];
+            return historyScore;
         }
     }
 
-    void MoveList::calculate_scores(const u16 special_move) {
+    void MoveList::calculateScores(const u16 specialMove) {
         for (int i = 0; i < size_; ++i) {
-            scores[i] = score_move(pos, moves[i], special_move);
+            scores[i] = scoreMove(pos, moves[i], specialMove);
         }
     }
 
-    void MoveList::calculate_scores() {
+    void MoveList::calculateScores() {
         for (int i = 0; i < size_; ++i) {
-            scores[i] = score_move(pos, moves[i], Move::NullMove);
+            scores[i] = scoreMove(pos, moves[i], Move::NullMove);
         }
     }
 }

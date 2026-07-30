@@ -8,12 +8,12 @@ namespace Tempo::Search {
     constexpr int MaxSearchDepth = 32;
 
     struct SearchInfo {
-        u64 nodes_searched = 0;
+        u64 nodesSearched = 0;
         int seldepth = 0;
 
         // pv table
-        u16 pv_table[MaxSearchDepth][MaxSearchDepth];
-        int pv_lengths[MaxSearchDepth];
+        u16 pvTable[MaxSearchDepth][MaxSearchDepth];
+        int pvLengths[MaxSearchDepth];
     };
 
     struct RootSearchResult {
@@ -28,11 +28,11 @@ namespace Tempo::Search {
     };
 
     void start(Position pos, int depth, int movetime);
-    inline void stop() { Timer::request_stop(); }
+    inline void stop() { Timer::requestStop(); }
 
     template <NodeType NT>
-    int search(SearchInfo& info, Position& pos, int depth, int plies_from_root, int alpha, int beta, bool allow_nmp = true);
-    int qsearch(SearchInfo& info, Position& pos, int depth, int plies_from_root, int alpha, int beta);
+    int search(SearchInfo& info, Position& pos, int depth, int pliesFromRoot, int alpha, int beta, bool allowNmp = true);
+    int qsearch(SearchInfo& info, Position& pos, int depth, int pliesFromRoot, int alpha, int beta);
 
     void init();
 }

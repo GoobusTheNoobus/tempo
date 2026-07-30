@@ -3,23 +3,23 @@
 
 namespace Tempo::TranspositionTable {
 
-    static inline int get_index(u64 key) { return key % BucketCount; }
+    static inline int getIndex(u64 key) { return key % BucketCount; }
 
     const Bucket& probe(u64 key) {
-        int index = get_index(key);
+        int index = getIndex(key);
 
         return data[index];
     }
 
-    void write(u64 key, u16 best_move, int score, u8 depth, EntryType flag) {
-        int index = get_index(key);
+    void write(u64 key, u16 bestMove, int score, u8 depth, EntryType flag) {
+        int index = getIndex(key);
         Bucket& bucket = data[index];
 
         for (int i = 0; i < BucketSize; i++) {
             if (bucket.entries[i].key == key) {
 
                 if (depth >= bucket.entries[i].depth)
-                    bucket.entries[i] = { key, score, best_move, depth, flag };
+                    bucket.entries[i] = { key, score, bestMove, depth, flag };
 
                 return;
             }
@@ -27,7 +27,7 @@ namespace Tempo::TranspositionTable {
 
         for (int i = 0; i < BucketSize; i++) {
             if (bucket.entries[i].key == 0) {
-                bucket.entries[i] = { key, score, best_move, depth, flag };
+                bucket.entries[i] = { key, score, bestMove, depth, flag };
                 return;
             }
         }
@@ -40,7 +40,7 @@ namespace Tempo::TranspositionTable {
         }
 
         if (depth >= replace->depth)
-            *replace = { key, score, best_move, depth, flag };
+            *replace = { key, score, bestMove, depth, flag };
     }
 
     int hashfull() {

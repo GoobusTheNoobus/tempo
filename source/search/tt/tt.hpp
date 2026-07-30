@@ -19,7 +19,7 @@ namespace Tempo {
         struct Entry {
             u64 key = 0;
             int score = 0;
-            u16 best_move;
+            u16 bestMove;
             u8 depth = 0;
             EntryType flag = Exact;
         };
@@ -35,7 +35,7 @@ namespace Tempo {
             inline static Bucket data[BucketCount];
         }
 
-        void write(u64 key, u16 best_move, int score, u8 depth, EntryType flag);
+        void write(u64 key, u16 bestMove, int score, u8 depth, EntryType flag);
         const Bucket& probe(u64 key);
         void clear();
 

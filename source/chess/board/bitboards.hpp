@@ -6,7 +6,7 @@ namespace Tempo {
 
     inline int ctz(u64 bb) { return __builtin_ctzll(bb); }
     inline int cnt(u64 bb) { return __builtin_popcountll(bb); }
-    inline int poplsb(u64& bb) {
+    inline int popLsb(u64& bb) {
         int lsb = ctz(bb);
         bb &= bb - 1;
         return lsb;

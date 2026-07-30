@@ -11,14 +11,14 @@ namespace Tempo {
         Timeout = 11002,
         KnownWin = 6000;
 
-    inline String score_string(int score) {
+    inline String scoreString(int score) {
         if (std::abs(score) <= MaxCentipawn) return "cp " + std::to_string(score);
 
-        int mate_dist = MateScore - std::abs(score);
+        int mateDist = MateScore - std::abs(score);
 
-        mate_dist = score > 0 ? mate_dist : -mate_dist;
-        mate_dist = (int)std::ceil(mate_dist / 2.0);
+        mateDist = score > 0 ? mateDist : -mateDist;
+        mateDist = (int)std::ceil(mateDist / 2.0);
 
-        return "mate " + std::to_string(mate_dist);
+        return "mate " + std::to_string(mateDist);
     }
 }

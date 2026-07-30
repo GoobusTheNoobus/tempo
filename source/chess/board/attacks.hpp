@@ -3,14 +3,14 @@
 
 namespace Tempo::Attacks {
     
-    bool is_attacked(const Position& pos, Square square, Color by);
+    bool isAttacked(const Position& pos, Square square, Color by);
 
-    u64 knight_attacks(Square);
-    u64 king_attacks(Square);
-    u64 pawn_attacks(Square, Color);
-    u64 bishop_attack(Square, u64 occ);
-    u64 rook_attack(Square, u64 occ); 
-    u64 queen_attack(Square, u64 occ);
+    u64 knightAttacks(Square);
+    u64 kingAttacks(Square);
+    u64 pawnAttacks(Square, Color);
+    u64 bishopAttack(Square, u64 occ);
+    u64 rookAttack(Square, u64 occ); 
+    u64 queenAttack(Square, u64 occ);
 
     void init();
 }

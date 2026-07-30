@@ -10,52 +10,52 @@
 
 namespace Tempo::UCI {
 
-    void info_depth(int depth, int seldepth, int score, u64 elapsed, u64 total_nodes, const u16 pv_arr[], int pv_len) {
+    void infoDepth(int depth, int seldepth, int score, u64 elapsed, u64 totalNodes, const u16 pvArr[], int pvLen) {
         std::cout << "info depth " << depth <<
                         " seldepth " << seldepth <<
-                        " score " << score_string(score) << 
-                        " nodes " << total_nodes << 
-                        " nps " << total_nodes * 1000 / std::max<u64>(1ULL, elapsed) << 
+                        " score " << scoreString(score) << 
+                        " nodes " << totalNodes << 
+                        " nps " << totalNodes * 1000 / std::max<u64>(1ULL, elapsed) << 
                         " hashfull " << TranspositionTable::hashfull() <<
                         " time " << std::max<u64>(1ULL, elapsed) <<
                         " pv ";
         
-        for (int i = 0; i < pv_len; ++i) 
-            std::cout << Move::to_string(pv_arr[i]) << ' ';
+        for (int i = 0; i < pvLen; ++i) 
+            std::cout << Move::toString(pvArr[i]) << ' ';
         
         std::cout << std::endl;
     }
 
-    void info_depth(int depth, u64 elapsed, u64 total_nodes, const u16 currmove, int currmovenumber) {
-        std::cout << "info depth " << depth << " time " << elapsed << " nodes " << total_nodes << " nps " << total_nodes * 1000 / std::max<u64>(1ULL, elapsed) << " currmove " << Move::to_string(currmove) << " currmovenumber " << currmovenumber << std::endl;
+    void infoDepth(int depth, u64 elapsed, u64 totalNodes, const u16 currmove, int currmovenumber) {
+        std::cout << "info depth " << depth << " time " << elapsed << " nodes " << totalNodes << " nps " << totalNodes * 1000 / std::max<u64>(1ULL, elapsed) << " currmove " << Move::toString(currmove) << " currmovenumber " << currmovenumber << std::endl;
     }
-    void info_string(const String& msg) { std::cout << "info string " << msg << std::endl; }
+    void infoString(const String& msg) { std::cout << "info string " << msg << std::endl; }
 
     namespace {
 
     Position position;
-    std::thread search_thread;
+    std::thread searchThread;
 
     void stop() {
         Search::stop();
 
-        if (search_thread.joinable()) {
-            search_thread.join();
+        if (searchThread.joinable()) {
+            searchThread.join();
         }
     }
 
-    void handle_uci() {
+    void handleUci() {
         std::cout << "id name Tempo \n" <<
                      "id author GoobusTheNoobus\n" <<
                      "uciok" <<
                      std::endl;    
     }
 
-    void handle_go(std::istringstream& iss) {
+    void handleGo(std::istringstream& iss) {
         stop();
 
-        if (search_thread.joinable()) {
-            search_thread.join();
+        if (searchThread.joinable()) {
+            searchThread.join();
         }
 
         String token;
@@ -86,34 +86,34 @@ namespace Tempo::UCI {
             }
         }
 
-        int time_limit = 0;
+        int timeLimit = 0;
 
         if (movetime > 0) {
-            time_limit = movetime;
+            timeLimit = movetime;
         }
 
         else if (wtime > 0 || btime > 0) {
-            int our_time = position.get_side_to_move() == White ? wtime : btime;
-            int our_inc  = position.get_side_to_move() == White ? winc : binc;
+            int ourTime = position.getSideToMove() == White ? wtime : btime;
+            int ourInc  = position.getSideToMove() == White ? winc : binc;
 
-            time_limit = std::min(our_time / 20 + our_inc / 2, our_time);
+            timeLimit = std::min(ourTime / 20 + ourInc / 2, ourTime);
         }
 
         if (depth < 1 || depth > Search::MaxSearchDepth) depth = Search::MaxSearchDepth;
         
-        search_thread = std::thread([depth, time_limit]() {
-            Search::start(position, depth, time_limit);
+        searchThread = std::thread([depth, timeLimit]() {
+            Search::start(position, depth, timeLimit);
         });
     }
 
-    void handle_position(std::istringstream& iss) {
+    void handlePosition(std::istringstream& iss) {
         stop();
 
         String token;
         iss >> token;
 
         if (token == "startpos") {
-            position.parse_fen(StartingPositionFen);
+            position.parseFen(StartingPositionFen);
 
             iss >> token;
         } else if (token == "fen") {
@@ -123,16 +123,16 @@ namespace Tempo::UCI {
                 fen += token + " ";
             }
 
-            position.parse_fen(fen);
+            position.parseFen(fen);
         }
 
         if (token == "moves") {
             while (iss >> token) {
-                position.make_move(token);
+                position.makeMove(token);
             }
         }
     }
-    void handle_isready() {
+    void handleIsready() {
         std::cout << "readyok" << std::endl;
     }
     void ucinewgame() {
@@ -143,16 +143,16 @@ namespace Tempo::UCI {
 
     void dispatch(const String& cmd, std::istringstream& iss) {
         if (cmd == "uci") {
-            handle_uci();
+            handleUci();
         }
         else if (cmd == "isready") {
-            handle_isready();
+            handleIsready();
         }
         else if (cmd == "go") {
-            handle_go(iss);
+            handleGo(iss);
         }
         else if (cmd == "position") {
-            handle_position(iss);
+            handlePosition(iss);
         }
         else if (cmd == "ucinewgame") {
             ucinewgame();
@@ -161,14 +161,14 @@ namespace Tempo::UCI {
             std::cout << position << std::endl;
         }
         else {
-            info_string("invalid command");
+            infoString("invalid command");
         }
     }
     }
 
     void loop() {
 
-        position.set_up_startpos();
+        position.setUpStartpos();
 
         while (true) {
             String command;

@@ -218,69 +218,69 @@ namespace Tempo {
         constexpr Direction BishopDirections[4] = { {1, 1}, {1, -1}, {-1, 1}, {-1, -1} };
         constexpr Direction RookDirections[4]   = { {1, 0}, {-1, 0}, { 0, 1}, { 0, -1} };
 
-        bool out_of_bounds(int x, int y) { return unsigned(x) >= 8 || unsigned(y) >= 8; }
+        bool outOfBounds(int x, int y) { return unsigned(x) >= 8 || unsigned(y) >= 8; }
 
-        u64 generate_blocker_from_index(int index, u64 mask) {
+        u64 generateBlockerFromIndex(int index, u64 mask) {
             u64 blocker = 0;
             int n = 0;
 
             while (mask) {
-                int squ = poplsb(mask);
+                int sq = popLsb(mask);
 
-                if (index & (1ULL << n)) blocker |= Bitboards::SquareBB[squ];
+                if (index & (1ULL << n)) blocker |= Bitboards::SquareBB[sq];
                 ++n;
             }
 
             return blocker;
         }
 
-        u64 raycast_bishop(Square square, u64 blockers) {
+        u64 raycastBishop(Square square, u64 blockers) {
             u64 mask = 0;
 
-            int r = rank_of(square);
-            int f = file_of(square);
+            int r = rankOf(square);
+            int f = fileOf(square);
 
             for (Direction dir : BishopDirections) {
                 for (int i = 1; i <= 7; ++i) {
-                    int new_r = r + dir.r * i;
-                    int new_f = f + dir.f * i;
+                    int newR = r + dir.r * i;
+                    int newF = f + dir.f * i;
 
-                    if (out_of_bounds(new_r, new_f)) break;
+                    if (outOfBounds(newR, newF)) break;
 
-                    Square new_squ = make_square(new_r, new_f);
-                    mask |= Bitboards::SquareBB[new_squ];
+                    Square newSq = makeSquare(newR, newF);
+                    mask |= Bitboards::SquareBB[newSq];
 
-                    if ((blockers & Bitboards::SquareBB[new_squ]) != 0) break;
+                    if ((blockers & Bitboards::SquareBB[newSq]) != 0) break;
                 }
             }
 
             return mask;
         }
 
-        u64 raycast_rook(Square square, u64 blockers) {
+        u64 raycastRook(Square square, u64 blockers) {
             u64 mask = 0;
 
-            int r = rank_of(square);
-            int f = file_of(square);
+            int r = rankOf(square);
+            int f = fileOf(square);
 
             for (Direction dir : RookDirections) {
                 for (int i = 1; i <= 7; ++i) {
-                    int new_r = r + dir.r * i;
-                    int new_f = f + dir.f * i;
+                    int newR = r + dir.r * i;
+                    int newF = f + dir.f * i;
 
-                    if (out_of_bounds(new_r, new_f)) break;
+                    if (outOfBounds(newR, newF)) break;
 
-                    Square new_squ = make_square(new_r, new_f);
-                    mask |= Bitboards::SquareBB[new_squ];
+                    Square newSq = makeSquare(newR, newF);
+                    mask |= Bitboards::SquareBB[newSq];
 
-                    if ((blockers & Bitboards::SquareBB[new_squ]) != 0) break;
+                    if ((blockers & Bitboards::SquareBB[newSq]) != 0) break;
                 }
             }
 
             return mask;
         }
 
-        int hash_bishop(Square square, u64 blockers) {
+        int hashBishop(Square square, u64 blockers) {
             blockers &= BishopMasks[square];
 
             if (UseBMI2)
@@ -292,7 +292,7 @@ namespace Tempo {
             return (int)blockers;
         }
 
-        int hash_rook(Square square, u64 blockers) {
+        int hashRook(Square square, u64 blockers) {
             blockers &= RookMasks[square];
 
             if (UseBMI2)
@@ -318,52 +318,52 @@ namespace Tempo {
             for (Square square = A1; square < SquareNB; square = Square(square + 1)) {
 
                 for (int i = 0; i < (1 << BishopRelevancies[square]); ++i) {
-                    u64 blockers = generate_blocker_from_index(i, BishopMasks[square]);
-                    u64 attacks  = raycast_bishop(square, blockers);
-                    int index    = hash_bishop(square, blockers) + BishopOffsets[square];
+                    u64 blockers = generateBlockerFromIndex(i, BishopMasks[square]);
+                    u64 attacks  = raycastBishop(square, blockers);
+                    int index    = hashBishop(square, blockers) + BishopOffsets[square];
 
                     BishopAttacks[index] = attacks;
                 }
 
                 for (int i = 0; i < (1 << RookRelevancies[square]); ++i) {
-                    u64 blockers = generate_blocker_from_index(i, RookMasks[square]);
-                    u64 attacks  = raycast_rook(square, blockers);
-                    int index    = hash_rook(square, blockers) + RookOffsets[square];
+                    u64 blockers = generateBlockerFromIndex(i, RookMasks[square]);
+                    u64 attacks  = raycastRook(square, blockers);
+                    int index    = hashRook(square, blockers) + RookOffsets[square];
 
                     RookAttacks[index] = attacks;
                 }
             }
         }
 
-        u64 knight_attacks(Square square) { return KnightAttacks[square]; }
-        u64 king_attacks(Square square) { return KingAttacks[square]; }
-        u64 pawn_attacks(Square square, Color color) { return color == White ? WhitePawnAttacks[square] : BlackPawnAttacks[square]; }
-        u64 bishop_attack(Square square, u64 occ) { return BishopAttacks[hash_bishop(square, occ) + BishopOffsets[square]]; }
-        u64 rook_attack(Square square, u64 occ) { return RookAttacks[hash_rook(square, occ) + RookOffsets[square]]; }
-        u64 queen_attack(Square square, u64 occ) { return rook_attack(square, occ) | bishop_attack(square, occ); }
+        u64 knightAttacks(Square square) { return KnightAttacks[square]; }
+        u64 kingAttacks(Square square) { return KingAttacks[square]; }
+        u64 pawnAttacks(Square square, Color color) { return color == White ? WhitePawnAttacks[square] : BlackPawnAttacks[square]; }
+        u64 bishopAttack(Square square, u64 occ) { return BishopAttacks[hashBishop(square, occ) + BishopOffsets[square]]; }
+        u64 rookAttack(Square square, u64 occ) { return RookAttacks[hashRook(square, occ) + RookOffsets[square]]; }
+        u64 queenAttack(Square square, u64 occ) { return rookAttack(square, occ) | bishopAttack(square, occ); }
 
         
         // Detects whether a square is attacked by a given side on the position
-        bool is_attacked(const Position& pos, Square square, Color by) {
+        bool isAttacked(const Position& pos, Square square, Color by) {
 
             // Pawns
-            if (pawn_attacks(square, opposite(by)) & pos.get_bitboard(Pawn, by)) 
+            if (pawnAttacks(square, opposite(by)) & pos.getBitboard(Pawn, by)) 
                 return true;
 
             // Knights
-            if (knight_attacks(square) & pos.get_bitboard(Knight, by)) 
+            if (knightAttacks(square) & pos.getBitboard(Knight, by)) 
                 return true;
 
             // Bishops + Queens
-            if (bishop_attack(square, pos.get_bitboard(White) | pos.get_bitboard(Black)) & (pos.get_bitboard(Bishop, by) | pos.get_bitboard(Queen, by))) 
+            if (bishopAttack(square, pos.getBitboard(White) | pos.getBitboard(Black)) & (pos.getBitboard(Bishop, by) | pos.getBitboard(Queen, by))) 
                 return true;
 
             // Rooks + Queens
-            if (rook_attack(square, pos.get_bitboard(White) | pos.get_bitboard(Black)) & (pos.get_bitboard(Rook, by) | pos.get_bitboard(Queen, by))) 
+            if (rookAttack(square, pos.getBitboard(White) | pos.getBitboard(Black)) & (pos.getBitboard(Rook, by) | pos.getBitboard(Queen, by))) 
                 return true;
 
             // kings
-            if (king_attacks(square) & pos.get_bitboard(King, by)) 
+            if (kingAttacks(square) & pos.getBitboard(King, by)) 
                 return true;
             
             // No attackers

@@ -14,18 +14,18 @@ namespace Tempo {
     constexpr int CastlingWK = 1, CastlingWQ = 2, CastlingBK = 4, CastlingBQ = 8;
 
     struct GameState {
-        Square en_passant_square = NoSquare;
-        int castling_rights = 0;
-        int rule50_clock = 0;
+        Square enPassantSquare = NoSquare;
+        int castlingRights = 0;
+        int rule50Clock = 0;
     };
 
     struct MoveUndoInfo {
         u64 key;
-        int castling_rights;
-        int rule50_clock;
+        int castlingRights;
+        int rule50Clock;
         u16 move;
-        Square en_passant_square;
-        Piece captured_piece;
+        Square enPassantSquare;
+        Piece capturedPiece;
     };
 
     class Position {
@@ -34,63 +34,60 @@ namespace Tempo {
 
         Position() = default;
         
-        void parse_fen(const String& fen);
-        void set_up_startpos();
-        String to_string() const;
+        void parseFen(const String& fen);
+        void setUpStartpos();
+        String toString() const;
 
-        inline Piece get_piece_on(Square s) const { return board[int(s)]; }
-        inline u64 get_bitboard(Color c) const { return color_bitboards[int(c)]; }
-        inline u64 get_bitboard(Piece p) const { return piece_bitboards[int(p)]; }
-        inline u64 get_bitboard(PieceType pt, Color c) const { return piece_bitboards[int(make_piece(pt, c))]; }
-        inline const u64* get_bitboards() const { return piece_bitboards; }
+        inline Piece getPieceOn(Square s) const { return board[int(s)]; }
+        inline u64 getBitboard(Color c) const { return colorBitboards[int(c)]; }
+        inline u64 getBitboard(Piece p) const { return pieceBitboards[int(p)]; }
+        inline u64 getBitboard(PieceType pt, Color c) const { return pieceBitboards[int(makePiece(pt, c))]; }
+        inline const u64* getBitboards() const { return pieceBitboards; }
 
-        inline Color get_side_to_move() const { return side_to_move; }
-        inline Square get_en_passant() const { return state.en_passant_square; }
-        inline bool has_castling_right(int mask) const { return state.castling_rights & mask; }
-        inline bool is_rule_50() const { return state.rule50_clock >= 100; }
-        inline u64 get_key() const { return hash; }
+        inline Color getSideToMove() const { return sideToMove; }
+        inline Square getEnPassant() const { return state.enPassantSquare; }
+        inline bool hasCastlingRight(int mask) const { return state.castlingRights & mask; }
+        inline bool isRule50() const { return state.rule50Clock >= 100; }
+        inline u64 getKey() const { return hash; }
 
-        bool is_attacked(Square, Color by) const;
-        bool is_in_check(Color) const;
-        bool is_in_check() const;
+        bool isAttacked(Square, Color by) const;
+        bool isInCheck(Color) const;
+        bool isInCheck() const;
 
-        void make_move(const u16 move);
-        void make_move(const String&);
-        bool attempt_move(const u16 move);
-        void undo_move();
+        void makeMove(const u16 move);
+        void makeMove(const String&);
+        bool attemptMove(const u16 move);
+        void undoMove();
 
-        bool has_non_pawn_material() const;
+        bool hasNonPawnMaterial() const;
 
         int evaluate() const;
-        bool is_repetition() const;
+        bool isRepetition() const;
 
     private:
 
         void clear();
-        void clear_square(Square square);
-        void place_piece(Square square, Piece piece);
+        void clearSquare(Square square);
+        void placePiece(Square square, Piece piece);
 
-        void push_move_stacks(u64 key, u16 move, int castling_rights, int rule50_clock, Square en_passant_square, Piece captured_piece);
-        MoveUndoInfo& pop_undo_info();
+        void pushMoveStacks(u64 key, u16 move, int castlingRights, int rule50Clock, Square enPassantSquare, Piece capturedPiece);
+        MoveUndoInfo& popUndoInfo();
 
         Piece board[SquareNB];
-        u64 piece_bitboards[PieceNB];
-        u64 color_bitboards[ColorNB];
+        u64 pieceBitboards[PieceNB];
+        u64 colorBitboards[ColorNB];
         u64 occupancy = 0;
 
-        Color side_to_move;
+        Color sideToMove;
         GameState state;
         u64 hash = 0;
 
-        MoveUndoInfo move_undo_stack[1024];
+        MoveUndoInfo moveUndoStack[1024];
         int ply = 0;
 
-        Evaluation::TaperedScore psqt_scores;
+        Evaluation::TaperedScore psqtScores;
 
     };
 
     std::ostream& operator<<(std::ostream& os, const Position& pos);
 }
-
-
-

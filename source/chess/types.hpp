@@ -43,16 +43,16 @@ namespace Tempo {
         NoPiece
     };
 
-    inline Piece make_piece(PieceType pt, Color c) { return Piece(c * 6 + pt); }
-    inline PieceType type_of(Piece p) { return PieceType(p % 6); }
-    inline Color color_of(Piece p) { return Color(p / 6); }
+    inline Piece makePiece(PieceType pt, Color c) { return Piece(c * 6 + pt); }
+    inline PieceType typeOf(Piece p) { return PieceType(p % 6); }
+    inline Color colorOf(Piece p) { return Color(p / 6); }
     inline Color opposite(Color c) { return Color(c ^ 1); }
 
-    inline Square make_square(int r, int f) { return Square(r * 8 + f); }
-    inline int file_of(Square s) { return s % 8; }
-    inline int rank_of(Square s) { return s / 8; }
+    inline Square makeSquare(int r, int f) { return Square(r * 8 + f); }
+    inline int fileOf(Square s) { return s % 8; }
+    inline int rankOf(Square s) { return s / 8; }
 
-    inline Square make_square(const String& str) {
+    inline Square makeSquare(const String& str) {
 
         char rc = str[1];
         char fc = str[0];
@@ -62,12 +62,12 @@ namespace Tempo {
 
         if (unsigned(rank) > 7 || unsigned(file) > 7) return NoSquare;
 
-        return make_square(rank, file);
+        return makeSquare(rank, file);
     }
 
-    inline String square_to_string(Square square) {
-        char rc = rank_of(square) + '1';
-        char fc = file_of(square) + 'a';
+    inline String squareToString(Square square) {
+        char rc = rankOf(square) + '1';
+        char fc = fileOf(square) + 'a';
 
         return {fc, rc};
     }
