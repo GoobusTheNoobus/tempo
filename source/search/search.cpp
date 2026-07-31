@@ -36,6 +36,10 @@ namespace Tempo::Search {
             
             info.pvLengths[ply] = childLength;
         }
+
+        inline int getFutilityMargin(int depth) {
+            return (depth - 1) * 100;
+        }
     }
 
     void init() {
@@ -112,18 +116,18 @@ namespace Tempo::Search {
     int search(SearchInfo& info, Position& pos, int depth, int pliesFromRoot, int alpha, int beta, bool allowNmp) {
         
         ++info.nodesSearched;
+        info.pvLengths[pliesFromRoot] = pliesFromRoot;
 
         if (pos.isRepetition() || pos.isRule50()) return DrawScore;
         if (depth == 0 && NT != RootNode) {
 
-            // Quiescence search
-            // Determine the depth by how far we are from root.
+            // quiescence search
+            // determine the depth by how far we are from root.
             int qsearchDepth = pliesFromRoot * 2 + 2;
             return qsearch(info, pos, std::min(qsearchDepth, MaxQSearchDepth), pliesFromRoot, alpha, beta);
         }
 
         info.seldepth = std::max(info.seldepth, pliesFromRoot);
-        info.pvLengths[pliesFromRoot] = pliesFromRoot;
 
         if (Timer::shouldStopSearch()) return Timeout;
 
@@ -200,6 +204,12 @@ namespace Tempo::Search {
 
             ++moveCount;
 
+            // futility pruning
+            if (!noisy && !inCheck && depth <= 2 && bestScore >= -MaxCentipawn && NT == NonPVNode && staticEval + getFutilityMargin(depth) <= alpha) {
+                pos.undoMove();
+                 continue;
+            }
+
             if (NT == RootNode && Timer::elapsed() >= 1500) {
                 UCI::infoDepth(depth, Timer::elapsed(), info.nodesSearched, move, moveCount);
             }
@@ -247,6 +257,7 @@ namespace Tempo::Search {
                 bestMove = move;
             }
 
+            // cutoff
             if (alpha >= beta) {
                 if (!noisy) {
                     History::update(pos.getSideToMove(), Move::from(move), Move::dest(move), std::min(300 * depth - 300, 2500));

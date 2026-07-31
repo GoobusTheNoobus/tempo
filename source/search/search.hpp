@@ -12,8 +12,8 @@ namespace Tempo::Search {
         int seldepth = 0;
 
         // pv table
-        u16 pvTable[MaxSearchDepth][MaxSearchDepth];
-        int pvLengths[MaxSearchDepth];
+        u16 pvTable[MaxSearchDepth][MaxSearchDepth]{};
+        int pvLengths[MaxSearchDepth]{};
     };
 
     struct RootSearchResult {
