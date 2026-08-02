@@ -1,4 +1,5 @@
 #include "chess/board/zobrist.hpp"
+
 #include <random>
 
 void Tempo::Zobrist::init() {

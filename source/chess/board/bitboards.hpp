@@ -1,5 +1,4 @@
 #pragma once
-
 #include "chess/types.hpp"
 
 namespace Tempo {

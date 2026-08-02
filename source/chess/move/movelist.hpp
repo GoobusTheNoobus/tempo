@@ -1,8 +1,8 @@
 #pragma once
 
+#include "chess/move/movegen.hpp"
 #include "chess/move/move.hpp"
 #include "chess/board/position.hpp"
-#include "chess/move/movegen.hpp"
 
 namespace Tempo {
     

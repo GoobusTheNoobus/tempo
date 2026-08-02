@@ -1,5 +1,6 @@
 #include "chess/board/attacks.hpp"
 #include "chess/board/bitboards.hpp"
+
 #include <immintrin.h>
 #include <cpuid.h>
 
@@ -308,12 +309,6 @@ namespace Tempo {
     namespace Attacks {
 
         void init() {
-
-            #ifdef __BMI2__
-            #pragma message "BMI2 is enabled"
-            #else
-            #pragma message "BMI2 is disabled"
-            #endif
                 
             for (Square square = A1; square < SquareNB; square = Square(square + 1)) {
 

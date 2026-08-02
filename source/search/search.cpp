@@ -107,6 +107,7 @@ namespace Tempo::Search {
             bestMove = info.pvTable[0][0];
 
             UCI::infoDepth(depth, info.seldepth, score, Timer::elapsed(), info.nodesSearched, info.pvTable[0], info.pvLengths[0]);
+            // UCI::infoString("The pv length at root is " + std::to_string(info.pvLengths[0]));
         }
 
         std::cout << "bestmove " << Move::toString(bestMove) << std::endl;
@@ -116,7 +117,7 @@ namespace Tempo::Search {
     int search(SearchInfo& info, Position& pos, int depth, int pliesFromRoot, int alpha, int beta, bool allowNmp) {
         
         ++info.nodesSearched;
-        info.pvLengths[pliesFromRoot] = pliesFromRoot;
+        if (NT != RootNode) info.pvLengths[pliesFromRoot] = pliesFromRoot;
 
         if (pos.isRepetition() || pos.isRule50()) return DrawScore;
         if (depth == 0 && NT != RootNode) {

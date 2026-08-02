@@ -1,5 +1,4 @@
 #pragma once
-
 #include "chess/board/bitboards.hpp"
 
 namespace Tempo::Evaluation {
@@ -7,7 +6,7 @@ namespace Tempo::Evaluation {
     constexpr int TempoBonus = 16;
 
     constexpr int MaxPhase = 24;
-    constexpr static int PhaseInc[PieceNB] = {0, 1, 1, 2, 4, 0, 0, 1, 1, 2, 4, 0}; 
+    constexpr int PhaseInc[PieceNB] = {0, 1, 1, 2, 4, 0, 0, 1, 1, 2, 4, 0}; 
 
     struct TaperedScore {
         int mgScore = 0;

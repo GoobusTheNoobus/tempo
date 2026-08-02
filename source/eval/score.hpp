@@ -2,14 +2,14 @@
 
 namespace Tempo {
 
-    constexpr int DrawScore = 0,
-        MaxCentipawn = 10000,
-        MinCentipawn = -10000,
-        MateScore = 11000,
-        Infinity = 11001,
-        NegativeInfinity = -11001,
-        Timeout = 11002,
-        KnownWin = 6000;
+    inline constexpr int DrawScore              = 0;
+    inline constexpr int MaxCentipawn           = 10000;
+    inline constexpr int MinCentipawn           = -10000;
+    inline constexpr int MateScore              = 11000;
+    inline constexpr int Infinity               = 11001;
+    inline constexpr int NegativeInfinity       = -11001;
+    inline constexpr int Timeout                = 11002;
+    inline constexpr int KnownWin               = 6000;
 
     inline String scoreString(int score) {
         if (std::abs(score) <= MaxCentipawn) return "cp " + std::to_string(score);
