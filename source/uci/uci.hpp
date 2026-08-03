@@ -1,8 +1,8 @@
 #pragma once
 
-#include "chess/types.hpp"
-#include "chess/move/move.hpp"
-#include "search/tt/tt.hpp"
+#include "core/types.hpp"
+#include "move/move.hpp"
+#include "tt/tt.hpp"
 
 #include <iostream>
 #include <vector>

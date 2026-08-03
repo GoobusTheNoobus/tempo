@@ -1,5 +1,5 @@
-#include "chess/board/attacks.hpp"
-#include "chess/board/bitboards.hpp"
+#include "bitboards/attacks.hpp"
+#include "bitboards/bitboards.hpp"
 
 #include <immintrin.h>
 #include <cpuid.h>

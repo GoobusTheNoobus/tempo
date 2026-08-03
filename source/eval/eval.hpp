@@ -1,5 +1,7 @@
 #pragma once
-#include "chess/board/bitboards.hpp"
+#include "bitboards/bitboards.hpp"
+#include "core/pieces.hpp"
+#include "core/squares.hpp"
 
 namespace Tempo::Evaluation {
 

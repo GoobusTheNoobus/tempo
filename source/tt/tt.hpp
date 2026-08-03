@@ -1,7 +1,7 @@
 #pragma once
 
-#include "chess/types.hpp"
-#include "chess/move/move.hpp"
+#include "core/types.hpp"
+#include "move/move.hpp"
 #include <iostream>
 
 namespace Tempo {

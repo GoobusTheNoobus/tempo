@@ -1,8 +1,8 @@
-#include "chess/board/position.hpp"
-#include "chess/board/bitboards.hpp"
-#include "chess/board/attacks.hpp"
-#include "chess/board/zobrist.hpp"
-#include "chess/move/movelist.hpp"
+#include "board/position.hpp"
+#include "bitboards/bitboards.hpp"
+#include "bitboards/attacks.hpp"
+#include "board/zobrist.hpp"
+#include "move/movelist.hpp"
 #include "eval/score.hpp"
 
 #include <sstream>

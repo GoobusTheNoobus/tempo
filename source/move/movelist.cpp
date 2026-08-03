@@ -1,7 +1,7 @@
-#include "chess/move/movelist.hpp"
+#include "move/movelist.hpp"
 #include "search/search.hpp"
 #include "search/history.hpp"
-#include "search/tt/tt.hpp"
+#include "tt/tt.hpp"
 
 namespace Tempo {
 

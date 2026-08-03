@@ -1,6 +1,6 @@
-#include "chess/move/movegen.hpp"
-#include "chess/board/attacks.hpp"
-#include "chess/board/bitboards.hpp"
+#include "move/movegen.hpp"
+#include "bitboards/attacks.hpp"
+#include "bitboards/bitboards.hpp"
 
 #include <iostream>
 

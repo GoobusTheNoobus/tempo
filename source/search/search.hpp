@@ -1,7 +1,7 @@
 #pragma once
 
-#include "chess/types.hpp"
-#include "chess/board/position.hpp"
+#include "core/types.hpp"
+#include "board/position.hpp"
 #include "search/timer.hpp"
 
 namespace Tempo::Search {

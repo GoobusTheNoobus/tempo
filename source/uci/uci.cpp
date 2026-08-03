@@ -1,5 +1,5 @@
 #include "uci/uci.hpp"
-#include "chess/board/position.hpp"
+#include "board/position.hpp"
 #include "search/search.hpp"
 #include "search/history.hpp"
 #include "search/killer.hpp"

@@ -1,7 +1,9 @@
 #pragma once
 
-#include "chess/types.hpp"
-#include "chess/move/move.hpp"
+#include "core/types.hpp"
+#include "core/squares.hpp"
+#include "core/pieces.hpp"
+#include "move/move.hpp"
 #include "eval/eval.hpp"
 
 #include <string>

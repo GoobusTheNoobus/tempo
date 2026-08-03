@@ -1,8 +1,8 @@
 #include <iostream>
 
 #include "eval/eval.hpp"
-#include "chess/board/zobrist.hpp"
-#include "chess/board/attacks.hpp"
+#include "board/zobrist.hpp"
+#include "bitboards/attacks.hpp"
 #include "uci/uci.hpp"
 #include "search/search.hpp"
 

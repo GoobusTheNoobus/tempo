@@ -1,5 +1,7 @@
 #pragma once
-#include "chess/types.hpp"
+#include "core/types.hpp"
+#include "core/pieces.hpp"
+#include "core/squares.hpp"
 
 namespace Tempo::Zobrist {
 
