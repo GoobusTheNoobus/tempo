@@ -8,7 +8,7 @@ namespace Tempo::Evaluation {
     constexpr int TempoBonus = 16;
 
     constexpr int MaxPhase = 24;
-    constexpr int PhaseInc[PieceNB] = {0, 1, 1, 2, 4, 0, 0, 1, 1, 2, 4, 0}; 
+    constexpr int PhaseInc[PieceNB] = {0, 1, 1, 2, 4, 0, 0, 1, 1, 2, 4, 0};
 
     struct TaperedScore {
         int mgScore = 0;
@@ -29,8 +29,10 @@ namespace Tempo::Evaluation {
         return std::min(MaxPhase, phase);
     }
 
+    // clang-format off
+
     constexpr int PawnValueMG = 82, KnightValueMG = 337, BishopValueMG = 365, RookValueMG = 477, QueenValueMG = 1025,
-                    PawnValueEG = 94, KnightValueEG = 281, BishopValueEG = 297, RookValueEG = 512, QueenValueEG =  936;
+                  PawnValueEG = 94, KnightValueEG = 281, BishopValueEG = 297, RookValueEG = 512, QueenValueEG =  936;
     constexpr int MGValues[PieceTypeNB] = {PawnValueMG, KnightValueMG, BishopValueMG, RookValueMG, QueenValueMG};
     constexpr int EGValues[PieceTypeNB] = {PawnValueEG, KnightValueEG, BishopValueEG, RookValueEG, QueenValueEG};
 
@@ -182,8 +184,9 @@ namespace Tempo::Evaluation {
         }
     };
 
-    inline void init() {
+    // clang-format on
 
+    inline void init() {
         for (int p = 0; p < 6; ++p) {
             for (int sq = 0; sq < 64; ++sq) {
                 MGTables[p][sq] += MGValues[p];
@@ -191,4 +194,4 @@ namespace Tempo::Evaluation {
             }
         }
     }
-}
+} // namespace Tempo::Evaluation

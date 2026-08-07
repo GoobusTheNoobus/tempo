@@ -1,14 +1,16 @@
 #pragma once
 
-#include "core/types.hpp"
-#include "core/squares.hpp"
 #include "core/pieces.hpp"
-#include "move/move.hpp"
+#include "core/squares.hpp"
+#include "core/types.hpp"
 #include "eval/eval.hpp"
+#include "move/move.hpp"
 
-#include <string>
+
 #include <iostream>
 #include <random>
+#include <string>
+
 
 namespace Tempo {
 
@@ -31,26 +33,52 @@ namespace Tempo {
     };
 
     class Position {
-
-    public:
-
+      public:
         Position() = default;
-        
+
         void parseFen(const String& fen);
         void setUpStartpos();
         String toString() const;
 
-        inline Piece getPieceOn(Square s) const { return board[int(s)]; }
-        inline u64 getBitboard(Color c) const { return colorBitboards[int(c)]; }
-        inline u64 getBitboard(Piece p) const { return pieceBitboards[int(p)]; }
-        inline u64 getBitboard(PieceType pt, Color c) const { return pieceBitboards[int(makePiece(pt, c))]; }
-        inline const u64* getBitboards() const { return pieceBitboards; }
+        inline Piece getPieceOn(Square s) const {
+            return board[int(s)];
+        }
 
-        inline Color getSideToMove() const { return sideToMove; }
-        inline Square getEnPassant() const { return state.enPassantSquare; }
-        inline bool hasCastlingRight(int mask) const { return state.castlingRights & mask; }
-        inline bool isRule50() const { return state.rule50Clock >= 100; }
-        inline u64 getKey() const { return hash; }
+        inline u64 getBitboard(Color c) const {
+            return colorBitboards[int(c)];
+        }
+
+        inline u64 getBitboard(Piece p) const {
+            return pieceBitboards[int(p)];
+        }
+
+        inline u64 getBitboard(PieceType pt, Color c) const {
+            return pieceBitboards[int(makePiece(pt, c))];
+        }
+
+        inline const u64* getBitboards() const {
+            return pieceBitboards;
+        }
+
+        inline Color getSideToMove() const {
+            return sideToMove;
+        }
+
+        inline Square getEnPassant() const {
+            return state.enPassantSquare;
+        }
+
+        inline bool hasCastlingRight(int mask) const {
+            return state.castlingRights & mask;
+        }
+
+        inline bool isRule50() const {
+            return state.rule50Clock >= 100;
+        }
+
+        inline u64 getKey() const {
+            return hash;
+        }
 
         bool isAttacked(Square, Color by) const;
         bool isInCheck(Color) const;
@@ -66,13 +94,13 @@ namespace Tempo {
         int evaluate() const;
         bool isRepetition() const;
 
-    private:
-
+      private:
         void clear();
         void clearSquare(Square square);
         void placePiece(Square square, Piece piece);
 
-        void pushMoveStacks(u64 key, u16 move, int castlingRights, int rule50Clock, Square enPassantSquare, Piece capturedPiece);
+        void pushMoveStacks(
+            u64 key, u16 move, int castlingRights, int rule50Clock, Square enPassantSquare, Piece capturedPiece);
         MoveUndoInfo& popUndoInfo();
 
         Piece board[SquareNB];
@@ -88,8 +116,7 @@ namespace Tempo {
         int ply = 0;
 
         Evaluation::TaperedScore psqtScores;
-
     };
 
     std::ostream& operator<<(std::ostream& os, const Position& pos);
-}
+} // namespace Tempo

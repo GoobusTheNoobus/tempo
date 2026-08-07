@@ -1,31 +1,40 @@
 #pragma once
 
-#include "move/movegen.hpp"
-#include "move/move.hpp"
 #include "board/position.hpp"
+#include "move/move.hpp"
+#include "move/movegen.hpp"
+
 
 namespace Tempo {
-    
-    class MoveList {
-        private:
 
+    class MoveList {
+      private:
         u16 moves[256];
         int scores[256];
         int size_ = 0;
         const Position& pos;
 
-        public:
+      public:
         inline MoveList(const Position& pos) : size_(MoveGen::generatePseudoLegalMoves(pos, moves)), pos(pos) {}
 
-        inline u16 operator[](int i) { return moves[i]; }
-        inline const u16 operator[](int i) const { return moves[i]; }
-        inline int size() { return size_; }
+        inline u16 operator[](int i) {
+            return moves[i];
+        }
+
+        inline const u16 operator[](int i) const {
+            return moves[i];
+        }
+
+        inline int size() {
+            return size_;
+        }
 
         void calculateScores(const u16 specialMove);
         void calculateScores();
+
         inline bool next(int i) {
-            
-            if (i >= size_) return false;
+            if (i >= size_)
+                return false;
 
             int highestScoreIndex = i;
             int highestScore = scores[i];
@@ -42,6 +51,5 @@ namespace Tempo {
 
             return true;
         }
-        
     };
-}
+} // namespace Tempo

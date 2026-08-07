@@ -1,15 +1,15 @@
 #include "search/search.hpp"
-#include "uci/uci.hpp"
+#include "eval/score.hpp"
 #include "move/movelist.hpp"
-#include "tt/tt.hpp"
-#include "search/timer.hpp"
 #include "search/history.hpp"
 #include "search/killer.hpp"
-#include "eval/score.hpp"
+#include "search/timer.hpp"
+#include "tt/tt.hpp"
+#include "uci/uci.hpp"
 
-#include <chrono>
-#include <atomic>
 #include <algorithm>
+#include <atomic>
+#include <chrono>
 #include <cstring>
 
 namespace Tempo::Search {
@@ -29,24 +29,24 @@ namespace Tempo::Search {
 
         inline void updatePv(SearchInfo& info, int ply, u16 move) {
             info.pvTable[ply][ply] = move;
-            
+
             int childLength = std::max(info.pvLengths[ply + 1], ply + 1);
             for (int i = ply + 1; i < childLength; ++i)
                 info.pvTable[ply][i] = info.pvTable[ply + 1][i];
-            
+
             info.pvLengths[ply] = childLength;
         }
 
         inline int getFutilityMargin(int depth) {
             return (depth - 1) * 100;
         }
-    }
+    } // namespace
 
     void init() {
         for (int m = 1; m < 256; ++m) {
             for (int d = 1; d < MaxSearchDepth; ++d) {
                 reductionTable[false][m][d] = (int)(0.5 * std::log(m) * std::log(d) + 0.75);
-                reductionTable[true][m][d]  = (int)(0.25 * std::log(m) * std::log(d) + 0.5);
+                reductionTable[true][m][d] = (int)(0.25 * std::log(m) * std::log(d) + 0.5);
             }
         }
     }
@@ -54,7 +54,6 @@ namespace Tempo::Search {
     constexpr int AspirationExpansion = 2;
 
     void start(Position pos, int maxDepth, int movetime) {
-
         // History::clear();
         TranspositionTable::clear();
         Killer::clear();
@@ -65,9 +64,6 @@ namespace Tempo::Search {
 
         SearchInfo info;
         for (int depth = 1; depth <= maxDepth; ++depth) {
-
-            bool logCurrmove = Timer::elapsed() > 500;
-
             info.seldepth = 0;
 
             int delta = AspirationWindow;
@@ -77,13 +73,13 @@ namespace Tempo::Search {
 
             int score;
             if (depth == 1) {
-                score = search<RootNode>(info, pos, depth, 0, alpha, beta, false);
-            }
-            else {
+                score = search<RootNode>(info, pos, depth, 0, NegativeInfinity, Infinity, false);
+            } else {
                 while (true) {
                     score = search<RootNode>(info, pos, depth, 0, alpha, beta, false);
 
-                    if (Timer::shouldStopSearch()) break;
+                    if (Timer::shouldStopSearch())
+                        break;
 
                     if (score <= alpha) {
                         alpha -= delta;
@@ -101,7 +97,8 @@ namespace Tempo::Search {
                 }
             }
 
-            if (Timer::shouldStopSearch()) break;
+            if (Timer::shouldStopSearch())
+                break;
 
             previousScore = score;
             bestMove = info.pvTable[0][0];
@@ -111,17 +108,18 @@ namespace Tempo::Search {
         }
 
         std::cout << "bestmove " << Move::toString(bestMove) << std::endl;
+        Search::Timer::stopFlag.store(false);
     }
 
     template <NodeType NT>
     int search(SearchInfo& info, Position& pos, int depth, int pliesFromRoot, int alpha, int beta, bool allowNmp) {
-        
         ++info.nodesSearched;
-        if (NT != RootNode) info.pvLengths[pliesFromRoot] = pliesFromRoot;
+        if (NT != RootNode)
+            info.pvLengths[pliesFromRoot] = pliesFromRoot;
 
-        if (pos.isRepetition() || pos.isRule50()) return DrawScore;
+        if (pos.isRepetition() || pos.isRule50())
+            return DrawScore;
         if (depth == 0 && NT != RootNode) {
-
             // quiescence search
             // determine the depth by how far we are from root.
             int qsearchDepth = pliesFromRoot * 2 + 2;
@@ -130,38 +128,33 @@ namespace Tempo::Search {
 
         info.seldepth = std::max(info.seldepth, pliesFromRoot);
 
-        if (Timer::shouldStopSearch()) return Timeout;
+        if (Timer::shouldStopSearch())
+            return Timeout;
 
         // TT probe
         u64 key = pos.getKey();
-        auto& bucket = TranspositionTable::probe(key);
-        const TranspositionTable::Entry* bestEntry = nullptr;
-        int highestDepth = -1;
-
-        for (int i = 0; i < TranspositionTable::BucketSize; ++i) {
-            const TranspositionTable::Entry* current = &bucket.entries[i];
-
-            if (current->key == key && highestDepth < current->depth) {
-                highestDepth = current->depth;
-                bestEntry = current;
-            }
-        }
-
+        auto entry = TranspositionTable::probe(key);
         u16 ttMove = 0;
 
-        if (bestEntry && bestEntry->depth >= depth) {
-
-            ttMove = bestEntry->bestMove;
-
-            if (NT == NonPVNode && bestEntry->flag == TranspositionTable::Exact) {
-                return bestEntry->score;
+        if (entry && entry->depth >= depth && NT == NonPVNode) {
+            int ttScore = entry->score;
+            if (ttScore > MaxCentipawn) {
+                ttScore -= pliesFromRoot;
+            } else if (ttScore <= -MaxCentipawn) {
+                ttScore += pliesFromRoot;
             }
 
-            else if (bestEntry->flag == TranspositionTable::Lower) alpha = std::max(alpha, bestEntry->score);
-            else if (bestEntry->flag == TranspositionTable::Upper) beta = std::min(beta, bestEntry->score);
+            if (NT == NonPVNode && entry->flag == TranspositionTable::Exact) {
+                return ttScore;
+            }
+
+            else if (entry->flag == TranspositionTable::Lower)
+                alpha = std::max(alpha, ttScore);
+            else if (entry->flag == TranspositionTable::Upper)
+                beta = std::min(beta, ttScore);
 
             if (NT == NonPVNode && alpha >= beta) {
-                return bestEntry->score;
+                return ttScore;
             }
         }
 
@@ -173,7 +166,6 @@ namespace Tempo::Search {
         }
 
         if (NT == NonPVNode && !inCheck && allowNmp && depth >= MinNMPDepth && staticEval >= beta && pos.hasNonPawnMaterial()) {
-
             int reduction = NMPReduction;
 
             pos.makeMove(Move::NullMove);
@@ -201,17 +193,19 @@ namespace Tempo::Search {
             bool noisy = isNoisy(pos, move);
 
             bool isLegal = pos.attemptMove(move);
-            if (!isLegal) continue;
+            if (!isLegal)
+                continue;
 
             ++moveCount;
 
             // futility pruning
-            if (!noisy && !inCheck && depth <= 2 && bestScore >= -MaxCentipawn && NT == NonPVNode && staticEval + getFutilityMargin(depth) <= alpha) {
+            if (!noisy && !inCheck && depth <= 2 && bestScore >= -MaxCentipawn && NT == NonPVNode &&
+                staticEval + getFutilityMargin(depth) <= alpha) {
                 pos.undoMove();
-                 continue;
+                continue;
             }
 
-            if (NT == RootNode && Timer::elapsed() >= 1500) {
+            if (NT == RootNode && Timer::elapsed() >= 1500 && logCurrmove) {
                 UCI::infoDepth(depth, Timer::elapsed(), info.nodesSearched, move, moveCount);
             }
 
@@ -241,7 +235,8 @@ namespace Tempo::Search {
 
             pos.undoMove();
 
-            if (Timer::shouldStopSearch()) break;
+            if (Timer::shouldStopSearch())
+                break;
 
             if (score > alpha) {
                 alpha = score;
@@ -277,7 +272,6 @@ namespace Tempo::Search {
         }
 
         if (moveCount == 0) {
-
             if (pos.isInCheck())
                 return -MateScore + pliesFromRoot + 1;
 
@@ -285,12 +279,22 @@ namespace Tempo::Search {
         }
 
         TranspositionTable::EntryType storeFlag;
-        if (bestScore <= originalAlpha) storeFlag = TranspositionTable::Upper;
-        else if (bestScore >= beta) storeFlag = TranspositionTable::Lower;
-        else storeFlag = TranspositionTable::Exact;
+        if (bestScore <= originalAlpha)
+            storeFlag = TranspositionTable::Upper;
+        else if (bestScore >= beta)
+            storeFlag = TranspositionTable::Lower;
+        else
+            storeFlag = TranspositionTable::Exact;
+
+        int storeScore = bestScore;
+        if (bestScore > MaxCentipawn) {
+            storeScore += pliesFromRoot;
+        } else if (bestScore <= -MaxCentipawn) {
+            storeScore -= pliesFromRoot;
+        }
 
         if (bestMove != 0) {
-            TranspositionTable::write(pos.getKey(), bestMove, std::clamp(bestScore, -KnownWin, KnownWin), depth, storeFlag);
+            TranspositionTable::write({pos.getKey(), storeScore, bestMove, std::max<u8>(depth, 0), storeFlag});
         }
 
         return bestScore;
@@ -299,13 +303,16 @@ namespace Tempo::Search {
     int qsearch(SearchInfo& info, Position& pos, int depth, int pliesFromRoot, int alpha, int beta) {
         ++info.nodesSearched;
 
-        if (pos.isRepetition() || pos.isRule50()) return DrawScore;
-        if (Timer::shouldStopSearch()) return Timeout;
+        if (pos.isRepetition() || pos.isRule50())
+            return DrawScore;
+        if (Timer::shouldStopSearch())
+            return Timeout;
 
         bool inCheck = pos.isInCheck();
         int staticEval = pos.evaluate();
 
-        if (depth <= 0 && !inCheck) return staticEval;
+        if (depth <= 0 && !inCheck)
+            return staticEval;
 
         if (!inCheck && staticEval >= beta) {
             return staticEval;
@@ -320,21 +327,22 @@ namespace Tempo::Search {
             u16 move = moves[i];
 
             bool searchMove = inCheck || isNoisy(pos, move);
-            if (!searchMove) continue;
+            if (!searchMove)
+                continue;
 
             bool isLegal = pos.attemptMove(move);
-            if (!isLegal) continue;
+            if (!isLegal)
+                continue;
 
             int score = -qsearch(info, pos, depth - 1, pliesFromRoot + 1, -beta, -alpha);
             pos.undoMove();
 
             alpha = std::max(score, alpha);
 
-            if (alpha >= beta) 
+            if (alpha >= beta)
                 return beta;
-                
         }
 
         return alpha;
     }
-}
+} // namespace Tempo::Search

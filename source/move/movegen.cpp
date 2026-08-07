@@ -27,7 +27,7 @@ namespace Tempo::MoveGen {
                 add(i, arr, Move::create(Square(lsb - offset), Square(lsb), Move::PromoN));
             }
         }
-    }
+    } // namespace
 
     int generatePseudoLegalMoves(const Position& pos, u16 moves[]) {
         int size = 0;
@@ -48,9 +48,12 @@ namespace Tempo::MoveGen {
         int rightCaptureOffset = isWhite ? 9 : -7;
 
         u64 singlePushBb = (isWhite ? pawns << 8 : pawns >> 8) & ~occ;
-        u64 doublePushBb = (isWhite ? (singlePushBb & rank3FromBottom) << 8 : (singlePushBb & rank3FromBottom) >> 8) & ~occ;
-        u64 leftCaptureBb = (isWhite ? (pawns & ~Bitboards::FileBB[0]) << 7 : (pawns & ~Bitboards::FileBB[0]) >> 9) & enemy;
-        u64 rightCaptureBb = (isWhite ? (pawns & ~Bitboards::FileBB[7]) << 9 : (pawns & ~Bitboards::FileBB[7]) >> 7) & enemy;
+        u64 doublePushBb =
+            (isWhite ? (singlePushBb & rank3FromBottom) << 8 : (singlePushBb & rank3FromBottom) >> 8) & ~occ;
+        u64 leftCaptureBb =
+            (isWhite ? (pawns & ~Bitboards::FileBB[0]) << 7 : (pawns & ~Bitboards::FileBB[0]) >> 9) & enemy;
+        u64 rightCaptureBb =
+            (isWhite ? (pawns & ~Bitboards::FileBB[7]) << 9 : (pawns & ~Bitboards::FileBB[7]) >> 7) & enemy;
 
         u64 singlePushPromoBb = singlePushBb & rank8FromBottom;
         u64 singlePushNormalBb = singlePushBb & ~rank8FromBottom;
@@ -133,23 +136,24 @@ namespace Tempo::MoveGen {
         constexpr u64 BQCastleEmpty = Bitboards::SquareBB[D8] | Bitboards::SquareBB[C8] | Bitboards::SquareBB[B8];
 
         if (isWhite && !pos.isAttacked(E1, them)) {
-
-            if (pos.hasCastlingRight(CastlingWK) && !(occ & WKCastleEmpty) && !pos.isAttacked(F1, them) && !pos.isAttacked(G1, them)) 
+            if (pos.hasCastlingRight(CastlingWK) && !(occ & WKCastleEmpty) && !pos.isAttacked(F1, them) &&
+                !pos.isAttacked(G1, them))
                 add(size, moves, Move::create(E1, G1, Move::Castling));
-            
-            if (pos.hasCastlingRight(CastlingWQ) && !(occ & WQCastleEmpty) && !pos.isAttacked(D1, them) && !pos.isAttacked(C1, them)) 
-                add(size, moves, Move::create(E1, C1, Move::Castling));
-            
-        } else if (!isWhite && !pos.isAttacked(E8, them)) {
 
-            if (pos.hasCastlingRight(CastlingBK) && !(occ & BKCastleEmpty) && !pos.isAttacked(F8, them) && !pos.isAttacked(G8, them)) 
+            if (pos.hasCastlingRight(CastlingWQ) && !(occ & WQCastleEmpty) && !pos.isAttacked(D1, them) &&
+                !pos.isAttacked(C1, them))
+                add(size, moves, Move::create(E1, C1, Move::Castling));
+
+        } else if (!isWhite && !pos.isAttacked(E8, them)) {
+            if (pos.hasCastlingRight(CastlingBK) && !(occ & BKCastleEmpty) && !pos.isAttacked(F8, them) &&
+                !pos.isAttacked(G8, them))
                 add(size, moves, Move::create(E8, G8, Move::Castling));
-            
-            if (pos.hasCastlingRight(CastlingBQ) && !(occ & BQCastleEmpty) && !pos.isAttacked(D8, them) && !pos.isAttacked(C8, them)) 
+
+            if (pos.hasCastlingRight(CastlingBQ) && !(occ & BQCastleEmpty) && !pos.isAttacked(D8, them) &&
+                !pos.isAttacked(C8, them))
                 add(size, moves, Move::create(E8, C8, Move::Castling));
-            
         }
 
         return size;
     }
-}
+} // namespace Tempo::MoveGen

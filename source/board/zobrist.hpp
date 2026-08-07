@@ -1,7 +1,8 @@
 #pragma once
-#include "core/types.hpp"
 #include "core/pieces.hpp"
 #include "core/squares.hpp"
+#include "core/types.hpp"
+
 
 namespace Tempo::Zobrist {
 
@@ -11,4 +12,4 @@ namespace Tempo::Zobrist {
     inline u64 SideKey;
 
     void init();
-}
+} // namespace Tempo::Zobrist

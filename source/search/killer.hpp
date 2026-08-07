@@ -6,11 +6,10 @@
 namespace Tempo::Search {
 
     class Killer {
-
-        private:
+      private:
         static inline u16 table[MaxSearchDepth][2];
 
-        public:
+      public:
         static inline void clear() {
             std::memset(table, 0, sizeof(table));
         }
@@ -20,5 +19,5 @@ namespace Tempo::Search {
             table[pliesFromRoot][0] = move;
         }
     };
-    
-}
+
+} // namespace Tempo::Search

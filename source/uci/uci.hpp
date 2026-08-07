@@ -15,5 +15,5 @@ namespace Tempo {
         void infoString(const String& msg);
 
         void loop();
-    }
-}
+    } // namespace UCI
+} // namespace Tempo

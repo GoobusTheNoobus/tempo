@@ -1,59 +1,43 @@
 #include "tt/tt.hpp"
 #include <cstring>
 
-namespace Tempo::TranspositionTable {
-
-    static inline int getIndex(u64 key) { return key % BucketCount; }
-
-    const Bucket& probe(u64 key) {
-        int index = getIndex(key);
-
-        return data[index];
+namespace Tempo {
+    void TranspositionTable::clear() {
+        std::memset(data.data(), 0, data.size() * sizeof(Entry));
     }
 
-    void write(u64 key, u16 bestMove, int score, u8 depth, EntryType flag) {
-        int index = getIndex(key);
-        Bucket& bucket = data[index];
-
-        for (int i = 0; i < BucketSize; i++) {
-            if (bucket.entries[i].key == key) {
-
-                if (depth >= bucket.entries[i].depth)
-                    bucket.entries[i] = { key, score, bestMove, depth, flag };
-
-                return;
-            }
-        }
-
-        for (int i = 0; i < BucketSize; i++) {
-            if (bucket.entries[i].key == 0) {
-                bucket.entries[i] = { key, score, bestMove, depth, flag };
-                return;
-            }
-        }
-
-        Entry* replace = &bucket.entries[0];
-
-        for (int i = 1; i < BucketSize; i++) {
-            if (bucket.entries[i].depth < replace->depth)
-                replace = &bucket.entries[i];
-        }
-
-        if (depth >= replace->depth)
-            *replace = { key, score, bestMove, depth, flag };
-    }
-
-    int hashfull() {
-        
-        int filled = 0;
+    int TranspositionTable::hashfull() {
+        int hashfull = 0;
         for (int i = 0; i < 1000; ++i) {
-            filled += (data[i].entries[0].key + data[i].entries[1].key + data[i].entries[2].key + data[i].entries[3].key) != 0;
+            if (data[i].bestMove != 0)
+                ++hashfull;
         }
-        return filled;
+
+        return hashfull;
     }
 
-    void clear() {
-        std::memset(data, 0, sizeof(data));
+    void TranspositionTable::init() {
+        data.resize(EntryNB);
     }
 
-}
+    void TranspositionTable::resize(usize mb) {
+        TableMB = mb;
+        EntryNB = (TableMB * 1024 * 1024) / sizeof(Entry);
+
+        data.resize(EntryNB);
+    }
+
+    TranspositionTable::Entry* TranspositionTable::probe(u64 key) {
+        int index = key % EntryNB;
+
+        return data[index].key == key ? &data[index] : nullptr;
+    }
+
+    void TranspositionTable::write(const Entry& entry) {
+        int index = entry.key % EntryNB;
+
+        if (data[index].depth <= entry.depth || data[index].key != entry.key) {
+            data[index] = entry;
+        }
+    }
+} // namespace Tempo

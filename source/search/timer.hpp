@@ -1,23 +1,23 @@
 #pragma once
 
 #include "core/types.hpp"
-#include <chrono>
 #include <atomic>
+#include <chrono>
+
 
 namespace Tempo::Search {
 
-    using Time = std::chrono::steady_clock::time_point;
-
     struct Timer {
-        private:
-        inline static Time startTime;
+      private:
+        inline static TimePoint startTime;
         inline static int maxTimeMs;
+
+      public:
         inline static std::atomic_bool stopFlag;
 
-        public:
         inline static void start(int maxTime) {
             maxTimeMs = maxTime;
-            startTime = std::chrono::steady_clock::now();
+            startTime = SteadyClock::now();
             stopFlag.store(false);
         }
 
@@ -26,12 +26,11 @@ namespace Tempo::Search {
         }
 
         inline static int elapsed() {
-            return std::chrono::duration_cast<std::chrono::milliseconds>
-                    (std::chrono::steady_clock::now() - startTime).count();
+            return Chrono::duration_cast<Chrono::milliseconds>(SteadyClock::now() - startTime).count();
         }
 
         inline static bool shouldStopSearch() {
             return stopFlag.load() || (maxTimeMs > 0 && elapsed() > maxTimeMs);
         }
     };
-}
+} // namespace Tempo::Search

@@ -1,12 +1,12 @@
 #include "board/position.hpp"
-#include "bitboards/bitboards.hpp"
 #include "bitboards/attacks.hpp"
+#include "bitboards/bitboards.hpp"
 #include "board/zobrist.hpp"
-#include "move/movelist.hpp"
 #include "eval/score.hpp"
+#include "move/movelist.hpp"
 
-#include <sstream>
 #include <charconv>
+#include <sstream>
 
 namespace Tempo {
     constexpr const char* PieceCharacters = "PNBRQKpnbrqk";
@@ -26,7 +26,8 @@ namespace Tempo {
         std::istringstream iss(fen);
 
         String fenBoardPart;
-        if (!(iss >> fenBoardPart)) return;
+        if (!(iss >> fenBoardPart))
+            return;
 
         int r = 7, f = 0;
         for (char c : fenBoardPart) {
@@ -55,26 +56,37 @@ namespace Tempo {
         }
 
         String fenSidePart;
-        if (!(iss >> fenSidePart)) return;
+        if (!(iss >> fenSidePart))
+            return;
         sideToMove = (fenSidePart == "w") ? White : Black;
 
         String fenCastlingPart;
-        if (!(iss >> fenCastlingPart)) return;
+        if (!(iss >> fenCastlingPart))
+            return;
         state.castlingRights = 0;
 
         if (fenCastlingPart != "-") {
             for (char c : fenCastlingPart) {
                 switch (c) {
-                    case 'K': state.castlingRights |= CastlingWK; break;
-                    case 'Q': state.castlingRights |= CastlingWQ; break;
-                    case 'k': state.castlingRights |= CastlingBK; break;
-                    case 'q': state.castlingRights |= CastlingBQ; break;
+                case 'K':
+                    state.castlingRights |= CastlingWK;
+                    break;
+                case 'Q':
+                    state.castlingRights |= CastlingWQ;
+                    break;
+                case 'k':
+                    state.castlingRights |= CastlingBK;
+                    break;
+                case 'q':
+                    state.castlingRights |= CastlingBQ;
+                    break;
                 }
             }
         }
 
         String fenEpPart;
-        if (!(iss >> fenEpPart)) return;
+        if (!(iss >> fenEpPart))
+            return;
 
         if (fenEpPart == "-")
             state.enPassantSquare = NoSquare;
@@ -82,12 +94,9 @@ namespace Tempo {
             state.enPassantSquare = makeSquare(fenEpPart);
 
         String fenRule50Part;
-        if (!(iss >> fenRule50Part)) return;
-        std::from_chars(
-            fenRule50Part.data(),
-            fenRule50Part.data() + fenRule50Part.size(),
-            state.rule50Clock
-        );
+        if (!(iss >> fenRule50Part))
+            return;
+        std::from_chars(fenRule50Part.data(), fenRule50Part.data() + fenRule50Part.size(), state.rule50Clock);
 
         if (sideToMove == Black)
             hash ^= Zobrist::SideKey;
@@ -97,7 +106,6 @@ namespace Tempo {
 
         if (state.enPassantSquare != NoSquare)
             hash ^= Zobrist::EnPassantKeys[fileOf(state.enPassantSquare)];
-
     }
 
     String Position::toString() const {
@@ -105,7 +113,6 @@ namespace Tempo {
 
         oss << '\n';
         for (int r = 7; r >= 0; --r) {
-            
             oss << "  +---+---+---+---+---+---+---+---+\n";
             oss << (r + 1) << ' ';
             for (int f = 0; f < 8; ++f) {
@@ -113,8 +120,10 @@ namespace Tempo {
 
                 Piece piece = getPieceOn(makeSquare(r, f));
 
-                if (piece != NoPiece) oss << PieceCharacters[piece];
-                else oss << ' ';
+                if (piece != NoPiece)
+                    oss << PieceCharacters[piece];
+                else
+                    oss << ' ';
 
                 oss << ' ';
             }
@@ -127,9 +136,12 @@ namespace Tempo {
     }
 
     void Position::clear() {
-        for (int i = 0; i < SquareNB; ++i) board[i] = NoPiece;
-        for (int i = 0; i < PieceNB; ++i) pieceBitboards[i] = 0;
-        for (int i = 0; i < ColorNB; ++i) colorBitboards[i] = 0;
+        for (int i = 0; i < SquareNB; ++i)
+            board[i] = NoPiece;
+        for (int i = 0; i < PieceNB; ++i)
+            pieceBitboards[i] = 0;
+        for (int i = 0; i < ColorNB; ++i)
+            colorBitboards[i] = 0;
         occupancy = 0;
 
         sideToMove = White;
@@ -138,11 +150,12 @@ namespace Tempo {
         state.rule50Clock = 0;
         ply = 0;
         hash = 0;
-        psqtScores = { 0, 0 };
+        psqtScores = {0, 0};
     }
 
     void Position::clearSquare(Square square) {
-        if (getPieceOn(square) == NoPiece) return;
+        if (getPieceOn(square) == NoPiece)
+            return;
 
         Piece pieceAlreadyThere = getPieceOn(square);
         Color color = colorOf(pieceAlreadyThere);
@@ -206,8 +219,9 @@ namespace Tempo {
         return isInCheck(sideToMove);
     }
 
-    void Position::pushMoveStacks(u64 key, u16 move, int castlingRights, int rule50Clock, Square enPassantSquare, Piece capturedPiece) {
-        moveUndoStack[ply++] = { key, castlingRights, rule50Clock, move, enPassantSquare, capturedPiece };
+    void Position::pushMoveStacks(
+        u64 key, u16 move, int castlingRights, int rule50Clock, Square enPassantSquare, Piece capturedPiece) {
+        moveUndoStack[ply++] = {key, castlingRights, rule50Clock, move, enPassantSquare, capturedPiece};
     }
 
     MoveUndoInfo& Position::popUndoInfo() {
@@ -229,14 +243,11 @@ namespace Tempo {
         if (!(move == Move::NullMove)) {
             movingPiece = getPieceOn(from);
             movingPt = typeOf(movingPiece);
-            capturedPiece = flag == Move::EnPassant
-                ? makePiece(Pawn, opposite(us))
-                : getPieceOn(dest);
+            capturedPiece = flag == Move::EnPassant ? makePiece(Pawn, opposite(us)) : getPieceOn(dest);
         }
 
         u64 hashBefore = hash;
-        pushMoveStacks(hash, move, state.castlingRights, state.rule50Clock,
-                        state.enPassantSquare, capturedPiece);
+        pushMoveStacks(hash, move, state.castlingRights, state.rule50Clock, state.enPassantSquare, capturedPiece);
 
         hash ^= Zobrist::SideKey;
 
@@ -254,61 +265,67 @@ namespace Tempo {
         }
 
         switch (flag) {
-            case Move::Normal: {
-                clearSquare(dest);
-                clearSquare(from);
-                placePiece(dest, movingPiece);
-                break;
-            }
-
-            case Move::Castling: {
-                bool kingSide = dest == G1 || dest == G8;
-
-                Square rookFrom = isWhite ? (kingSide ? H1 : A1) : (kingSide ? H8 : A8);
-                Square rookDest = isWhite ? (kingSide ? F1 : D1) : (kingSide ? F8 : D8);
-
-                clearSquare(rookFrom);
-                clearSquare(from);
-
-                placePiece(dest, movingPiece);
-                placePiece(rookDest, makePiece(Rook, us));
-                break;
-            }
-
-            case Move::EnPassant: {
-                Square captureSquare = isWhite ? Square(dest - 8) : Square(dest + 8);
-
-                clearSquare(captureSquare);
-                clearSquare(from);
-                placePiece(dest, movingPiece);
-                break;
-            }
-
-            case Move::DoublePawnPush: {
-                state.enPassantSquare = isWhite ? Square(dest - 8) : Square(dest + 8);
-
-                clearSquare(from);
-                placePiece(dest, movingPiece);
-                break;
-            }
-
-            default: {
-                constexpr static PieceType PromoPieces[] = {Queen, Rook, Bishop, Knight};
-
-                clearSquare(from);
-                clearSquare(dest);
-                placePiece(dest, makePiece(PromoPieces[flag - Move::PromoQ], us));
-                break;
-            }
+        case Move::Normal: {
+            clearSquare(dest);
+            clearSquare(from);
+            placePiece(dest, movingPiece);
+            break;
         }
 
-        if (from == A1 || dest == A1) state.castlingRights &= ~CastlingWQ;
-        if (from == A8 || dest == A8) state.castlingRights &= ~CastlingBQ;
-        if (from == H1 || dest == H1) state.castlingRights &= ~CastlingWK;
-        if (from == H8 || dest == H8) state.castlingRights &= ~CastlingBK;
+        case Move::Castling: {
+            bool kingSide = dest == G1 || dest == G8;
 
-        if (from == E1) state.castlingRights &= ~(CastlingWK | CastlingWQ);
-        else if (from == E8) state.castlingRights &= ~(CastlingBK | CastlingBQ);
+            Square rookFrom = isWhite ? (kingSide ? H1 : A1) : (kingSide ? H8 : A8);
+            Square rookDest = isWhite ? (kingSide ? F1 : D1) : (kingSide ? F8 : D8);
+
+            clearSquare(rookFrom);
+            clearSquare(from);
+
+            placePiece(dest, movingPiece);
+            placePiece(rookDest, makePiece(Rook, us));
+            break;
+        }
+
+        case Move::EnPassant: {
+            Square captureSquare = isWhite ? Square(dest - 8) : Square(dest + 8);
+
+            clearSquare(captureSquare);
+            clearSquare(from);
+            placePiece(dest, movingPiece);
+            break;
+        }
+
+        case Move::DoublePawnPush: {
+            state.enPassantSquare = isWhite ? Square(dest - 8) : Square(dest + 8);
+
+            clearSquare(from);
+            placePiece(dest, movingPiece);
+            break;
+        }
+
+        default: {
+            constexpr static PieceType PromoPieces[] = {Queen, Rook, Bishop, Knight};
+
+            clearSquare(from);
+            clearSquare(dest);
+            placePiece(dest, makePiece(PromoPieces[flag - Move::PromoQ], us));
+            break;
+        }
+        }
+
+        if (from == A1 || dest == A1)
+            state.castlingRights &= ~CastlingWQ;
+        if (from == A8 || dest == A8)
+            state.castlingRights &= ~CastlingBQ;
+        if (from == H1 || dest == H1)
+            state.castlingRights &= ~CastlingWK;
+        if (from == H8 || dest == H8)
+            state.castlingRights &= ~CastlingBK;
+
+        if (from == E1)
+            state.castlingRights &= ~(CastlingWK | CastlingWQ);
+        else if (from == E8)
+            state.castlingRights &= ~(CastlingBK | CastlingBQ);
 
         if (state.enPassantSquare != NoSquare)
             hash ^= Zobrist::EnPassantKeys[fileOf(state.enPassantSquare)];
@@ -316,9 +333,10 @@ namespace Tempo {
         if (state.castlingRights != 0)
             hash ^= Zobrist::CastlingKeys[state.castlingRights];
 
-        if (capturedPiece != NoPiece || movingPt == Pawn) state.rule50Clock = 0;
-        else state.rule50Clock++;
-
+        if (capturedPiece != NoPiece || movingPt == Pawn)
+            state.rule50Clock = 0;
+        else
+            state.rule50Clock++;
     }
 
     void Position::makeMove(const String& moveStr) {
@@ -372,40 +390,41 @@ namespace Tempo {
         Piece movingPiece = flag >= Move::PromoQ ? makePiece(Pawn, us) : getPieceOn(dest);
 
         switch (flag) {
-            case Move::DoublePawnPush:
-            case Move::Normal: {
-                clearSquare(dest);
-                placePiece(from, movingPiece);
-                if (capturedPiece != NoPiece) placePiece(dest, capturedPiece);
-                break;
-            }
-
-            case Move::Castling: {
-                bool kingSide = dest == G1 || dest == G8;
-
-                Square rookFrom = isWhite ? (kingSide ? H1 : A1) : (kingSide ? H8 : A8);
-                Square rookDest = isWhite ? (kingSide ? F1 : D1) : (kingSide ? F8 : D8);
-
-                clearSquare(dest);
-                clearSquare(rookDest);
-                placePiece(from, movingPiece);
-                placePiece(rookFrom, makePiece(Rook, us));
-                break;
-            }
-
-            case Move::EnPassant: {
-                clearSquare(dest);
-                placePiece(from, movingPiece);
-                placePiece(Square(isWhite ? dest - 8 : dest + 8), capturedPiece);
-                break;
-            }
-
-            default: {
-                clearSquare(dest);
-                placePiece(from, movingPiece);
+        case Move::DoublePawnPush:
+        case Move::Normal: {
+            clearSquare(dest);
+            placePiece(from, movingPiece);
+            if (capturedPiece != NoPiece)
                 placePiece(dest, capturedPiece);
-                break;
-            }
+            break;
+        }
+
+        case Move::Castling: {
+            bool kingSide = dest == G1 || dest == G8;
+
+            Square rookFrom = isWhite ? (kingSide ? H1 : A1) : (kingSide ? H8 : A8);
+            Square rookDest = isWhite ? (kingSide ? F1 : D1) : (kingSide ? F8 : D8);
+
+            clearSquare(dest);
+            clearSquare(rookDest);
+            placePiece(from, movingPiece);
+            placePiece(rookFrom, makePiece(Rook, us));
+            break;
+        }
+
+        case Move::EnPassant: {
+            clearSquare(dest);
+            placePiece(from, movingPiece);
+            placePiece(Square(isWhite ? dest - 8 : dest + 8), capturedPiece);
+            break;
+        }
+
+        default: {
+            clearSquare(dest);
+            placePiece(from, movingPiece);
+            placePiece(dest, capturedPiece);
+            break;
+        }
         }
 
         hash = info.key;
@@ -417,13 +436,15 @@ namespace Tempo {
         int score;
         score = psqtScores.getScore(phase);
 
-        return std::min(std::max((sideToMove == White ? score : -score) + Evaluation::TempoBonus, MinCentipawn), MaxCentipawn);
-    } 
+        return std::min(std::max((sideToMove == White ? score : -score) + Evaluation::TempoBonus, MinCentipawn),
+                        MaxCentipawn);
+    }
 
     bool Position::isRepetition() const {
         u64 key = hash;
 
-        if (ply < 2) return false;
+        if (ply < 2)
+            return false;
 
         int count = 0;
 
@@ -440,7 +461,8 @@ namespace Tempo {
     }
 
     bool Position::hasNonPawnMaterial() const {
-        return colorBitboards[sideToMove] & ~(pieceBitboards[makePiece(Pawn, sideToMove)] | pieceBitboards[makePiece(King, sideToMove)]);
+        return colorBitboards[sideToMove] &
+               ~(pieceBitboards[makePiece(Pawn, sideToMove)] | pieceBitboards[makePiece(King, sideToMove)]);
     }
 
-}
+} // namespace Tempo

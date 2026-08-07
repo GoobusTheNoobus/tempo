@@ -20,5 +20,4 @@ void Tempo::Zobrist::init() {
     }
 
     SideKey = rng();
-
 }

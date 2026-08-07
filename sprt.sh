@@ -1,0 +1,11 @@
+fastchess.exe -engine name=new cmd=./new.exe \
+              -engine name=old cmd=./old.exe \
+              -each tc=10+0.1 proto=uci \
+              -rounds 10000 \
+              -sprt alpha=0.05 beta=0.05 elo0=0 elo1=10 \
+              -concurrency 10 \
+              -repeat \
+              -pgnout file=games.pgn \
+              -openings file=book.pgn format=pgn order=random \
+              -scoreinterval 5 \
+              -ratinginterval 5

@@ -2,11 +2,12 @@
 #include "bitboards/bitboards.hpp"
 
 #include <immintrin.h>
-#include <cpuid.h>
 
 namespace Tempo {
 
     namespace {
+
+        // clang-format off
 
         // Detect at compile time whether BMI2 is supported
         #ifdef __BMI2__
@@ -212,6 +213,8 @@ namespace Tempo {
             81920, 86016, 88064, 90112, 92160, 94208, 96256, 98304,
         };
 
+        
+
         u64 BishopAttacks[5248];
         u64 RookAttacks[102400];
 
@@ -221,6 +224,8 @@ namespace Tempo {
 
         bool outOfBounds(int x, int y) { return unsigned(x) >= 8 || unsigned(y) >= 8; }
 
+        // clang-format on
+
         u64 generateBlockerFromIndex(int index, u64 mask) {
             u64 blocker = 0;
             int n = 0;
@@ -228,7 +233,8 @@ namespace Tempo {
             while (mask) {
                 int sq = popLsb(mask);
 
-                if (index & (1ULL << n)) blocker |= Bitboards::SquareBB[sq];
+                if (index & (1ULL << n))
+                    blocker |= Bitboards::SquareBB[sq];
                 ++n;
             }
 
@@ -246,12 +252,14 @@ namespace Tempo {
                     int newR = r + dir.r * i;
                     int newF = f + dir.f * i;
 
-                    if (outOfBounds(newR, newF)) break;
+                    if (outOfBounds(newR, newF))
+                        break;
 
                     Square newSq = makeSquare(newR, newF);
                     mask |= Bitboards::SquareBB[newSq];
 
-                    if ((blockers & Bitboards::SquareBB[newSq]) != 0) break;
+                    if ((blockers & Bitboards::SquareBB[newSq]) != 0)
+                        break;
                 }
             }
 
@@ -269,12 +277,14 @@ namespace Tempo {
                     int newR = r + dir.r * i;
                     int newF = f + dir.f * i;
 
-                    if (outOfBounds(newR, newF)) break;
+                    if (outOfBounds(newR, newF))
+                        break;
 
                     Square newSq = makeSquare(newR, newF);
                     mask |= Bitboards::SquareBB[newSq];
 
-                    if ((blockers & Bitboards::SquareBB[newSq]) != 0) break;
+                    if ((blockers & Bitboards::SquareBB[newSq]) != 0)
+                        break;
                 }
             }
 
@@ -304,67 +314,81 @@ namespace Tempo {
 
             return (int)blockers;
         }
-    }
+    } // namespace
 
     namespace Attacks {
 
         void init() {
-                
             for (Square square = A1; square < SquareNB; square = Square(square + 1)) {
-
                 for (int i = 0; i < (1 << BishopRelevancies[square]); ++i) {
                     u64 blockers = generateBlockerFromIndex(i, BishopMasks[square]);
-                    u64 attacks  = raycastBishop(square, blockers);
-                    int index    = hashBishop(square, blockers) + BishopOffsets[square];
+                    u64 attacks = raycastBishop(square, blockers);
+                    int index = hashBishop(square, blockers) + BishopOffsets[square];
 
                     BishopAttacks[index] = attacks;
                 }
 
                 for (int i = 0; i < (1 << RookRelevancies[square]); ++i) {
                     u64 blockers = generateBlockerFromIndex(i, RookMasks[square]);
-                    u64 attacks  = raycastRook(square, blockers);
-                    int index    = hashRook(square, blockers) + RookOffsets[square];
+                    u64 attacks = raycastRook(square, blockers);
+                    int index = hashRook(square, blockers) + RookOffsets[square];
 
                     RookAttacks[index] = attacks;
                 }
             }
         }
 
-        u64 knightAttacks(Square square) { return KnightAttacks[square]; }
-        u64 kingAttacks(Square square) { return KingAttacks[square]; }
-        u64 pawnAttacks(Square square, Color color) { return color == White ? WhitePawnAttacks[square] : BlackPawnAttacks[square]; }
-        u64 bishopAttack(Square square, u64 occ) { return BishopAttacks[hashBishop(square, occ) + BishopOffsets[square]]; }
-        u64 rookAttack(Square square, u64 occ) { return RookAttacks[hashRook(square, occ) + RookOffsets[square]]; }
-        u64 queenAttack(Square square, u64 occ) { return rookAttack(square, occ) | bishopAttack(square, occ); }
+        u64 knightAttacks(Square square) {
+            return KnightAttacks[square];
+        }
 
-        
+        u64 kingAttacks(Square square) {
+            return KingAttacks[square];
+        }
+
+        u64 pawnAttacks(Square square, Color color) {
+            return color == White ? WhitePawnAttacks[square] : BlackPawnAttacks[square];
+        }
+
+        u64 bishopAttack(Square square, u64 occ) {
+            return BishopAttacks[hashBishop(square, occ) + BishopOffsets[square]];
+        }
+
+        u64 rookAttack(Square square, u64 occ) {
+            return RookAttacks[hashRook(square, occ) + RookOffsets[square]];
+        }
+
+        u64 queenAttack(Square square, u64 occ) {
+            return rookAttack(square, occ) | bishopAttack(square, occ);
+        }
+
         // Detects whether a square is attacked by a given side on the position
         bool isAttacked(const Position& pos, Square square, Color by) {
-
             // Pawns
-            if (pawnAttacks(square, opposite(by)) & pos.getBitboard(Pawn, by)) 
+            if (pawnAttacks(square, opposite(by)) & pos.getBitboard(Pawn, by))
                 return true;
 
             // Knights
-            if (knightAttacks(square) & pos.getBitboard(Knight, by)) 
+            if (knightAttacks(square) & pos.getBitboard(Knight, by))
                 return true;
 
             // Bishops + Queens
-            if (bishopAttack(square, pos.getBitboard(White) | pos.getBitboard(Black)) & (pos.getBitboard(Bishop, by) | pos.getBitboard(Queen, by))) 
+            if (bishopAttack(square, pos.getBitboard(White) | pos.getBitboard(Black)) &
+                (pos.getBitboard(Bishop, by) | pos.getBitboard(Queen, by)))
                 return true;
 
             // Rooks + Queens
-            if (rookAttack(square, pos.getBitboard(White) | pos.getBitboard(Black)) & (pos.getBitboard(Rook, by) | pos.getBitboard(Queen, by))) 
+            if (rookAttack(square, pos.getBitboard(White) | pos.getBitboard(Black)) &
+                (pos.getBitboard(Rook, by) | pos.getBitboard(Queen, by)))
                 return true;
 
             // kings
-            if (kingAttacks(square) & pos.getBitboard(King, by)) 
+            if (kingAttacks(square) & pos.getBitboard(King, by))
                 return true;
-            
+
             // No attackers
             return false;
         }
-    }
+    } // namespace Attacks
 
-    
-}
+} // namespace Tempo

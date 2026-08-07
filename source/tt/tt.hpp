@@ -6,15 +6,8 @@
 
 namespace Tempo {
 
-    namespace TranspositionTable {
-
-        constexpr int BucketSize = 4;
-
-        enum EntryType : u8 {
-            Exact,
-            Lower,
-            Upper
-        };
+    struct TranspositionTable {
+        enum EntryType : u8 { Exact, Lower, Upper };
 
         struct Entry {
             u64 key = 0;
@@ -24,21 +17,19 @@ namespace Tempo {
             EntryType flag = Exact;
         };
 
-        struct Bucket {
-            Entry entries[BucketSize];
-        };
+      private:
+        inline static usize TableMB = 64;
+        inline static usize EntryNB = (TableMB * 1024 * 1024) / sizeof(Entry);
 
-        namespace {
-            inline constexpr static int TableMB = 108;
-            inline constexpr static int BucketCount = (TableMB * 1024 * 1024) / sizeof(Bucket);
+        inline static Vector<Entry> data;
 
-            inline static Bucket data[BucketCount];
-        }
+      public:
+        static void write(const Entry& entry);
+        static Entry* probe(u64 key);
+        static void clear();
 
-        void write(u64 key, u16 bestMove, int score, u8 depth, EntryType flag);
-        const Bucket& probe(u64 key);
-        void clear();
-
-        int hashfull();
+        static int hashfull();
+        static void init();
+        static void resize(usize mb);
     };
-}
+} // namespace Tempo
